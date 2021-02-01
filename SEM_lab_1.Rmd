@@ -286,7 +286,14 @@ graph_sem(edges = edg, nodes = nod, layout = get_layout("", "f", "",
 
 ## Degrees of freedom
 
-We can quickly check if our theoretical model has a positive degrees of freedom using the following formula.
+Sorts of identification:
+
+1. non-identified: $df < 0$, impossible to estimate parameters
+2. over-identified: $df > 0$, we should strive for this
+3. just-identified: $df = 0$, it’s ok, but the fit cannot be assessed
+4. empirical under-identification: it can happen when two or more indicators are highly correlated (multicollinearity)
+
+We can quickly check if our model has positive degrees of freedom using the following formula.
 
 **Degrees of freedom** = Number of parameters to estimate - Pieces of informations
 
@@ -298,11 +305,11 @@ where $p$ is the number of "manifest" indicators $i$ (also called "measured vari
 
 where $\psi{f}$ is the latent factor $f$ variance, $\lambda_{fi}$ is the loading on the latent factor $f$ for each observed indicator $i$, and $\theta_{i}$ is the residual variance for each observed indicator $i$.
 
-**Q:** Why $\lambda_{fi}=2$ ?
+**Q:** Why $\lambda_{fi}=2$ ? (Pro Tip: (do not count parameters we fixed for scaling).
 
 **Degrees of freedom** = Number of parameters to estimate - Pieces of informations =$6-6=0$
 
-**Q:** What are the implication of having 0 degrees of freedom?
+**Q:** What are the implication of having 0 degrees of freedom? 
 
 Remember: 
 
@@ -338,6 +345,12 @@ Let's take a closer look at the lavaan syntax
 So, if we want, we can freely estimate the first factor loading and fix the factor variance to 1:
 
 ## Alternative model specification
+
+Remember: Every factor in CFA should be given a metric to be identified.
+
+1. Fix one factor loading to 1 (“marker variable” method)
+2. Fix factor variance to 1
+3. Fix the average loading to 1 (“effect coding” method).
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 

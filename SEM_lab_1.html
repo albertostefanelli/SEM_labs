@@ -477,13 +477,20 @@ gvpdlwk 1.0712067 0.8159548 0.9485565 1.6873857 1.165637 3.1251045</code></pre>
 </div>
 <div id="degrees-of-freedom" class="section level2" number="6.2">
 <h2><span class="header-section-number">6.2</span> Degrees of freedom</h2>
-<p>We can quickly check if our theoretical model has a positive degrees of freedom using the following formula.</p>
+<p>Sorts of identification:</p>
+<ol style="list-style-type: decimal">
+<li>non-identified: <span class="math inline">\(df &lt; 0\)</span>, impossible to estimate parameters</li>
+<li>over-identified: <span class="math inline">\(df &gt; 0\)</span>, we should strive for this</li>
+<li>just-identified: <span class="math inline">\(df = 0\)</span>, it’s ok, but the fit cannot be assessed</li>
+<li>empirical under-identification: it can happen when two or more indicators are highly correlated (multicollinearity)</li>
+</ol>
+<p>We can quickly check if our model has positive degrees of freedom using the following formula.</p>
 <p><strong>Degrees of freedom</strong> = Number of parameters to estimate - Pieces of informations</p>
 <p><strong>Pieces of informations</strong> = <span class="math inline">\(\dfrac{p(p+1)}{2}=\dfrac{3(3+1)}{2}=6\)</span>.</p>
 <p>where <span class="math inline">\(p\)</span> is the number of “manifest” indicators <span class="math inline">\(i\)</span> (also called “measured variables” or “observed indicators”), in this case gvslvol gvslvue, gvhlthc.</p>
 <p><strong>Number of parameters to estimate</strong> = <span class="math inline">\(\psi{f} + \lambda_{ji} + \theta_i= 1 + 2 + 3=6\)</span></p>
 <p>where <span class="math inline">\(\psi{f}\)</span> is the latent factor <span class="math inline">\(f\)</span> variance, <span class="math inline">\(\lambda_{fi}\)</span> is the loading on the latent factor <span class="math inline">\(f\)</span> for each observed indicator <span class="math inline">\(i\)</span>, and <span class="math inline">\(\theta_{i}\)</span> is the residual variance for each observed indicator <span class="math inline">\(i\)</span>.</p>
-<p><strong>Q:</strong> Why <span class="math inline">\(\lambda_{fi}=2\)</span> ?</p>
+<p><strong>Q:</strong> Why <span class="math inline">\(\lambda_{fi}=2\)</span> ? (Pro Tip: (do not count parameters we fixed for scaling).</p>
 <p><strong>Degrees of freedom</strong> = Number of parameters to estimate - Pieces of informations =<span class="math inline">\(6-6=0\)</span></p>
 <p><strong>Q:</strong> What are the implication of having 0 degrees of freedom?</p>
 <p>Remember:</p>
@@ -548,6 +555,12 @@ Variances:
 </div>
 <div id="alternative-model-specification" class="section level2" number="6.4">
 <h2><span class="header-section-number">6.4</span> Alternative model specification</h2>
+<p>Remember: Every factor in CFA should be given a metric to be identified.</p>
+<ol style="list-style-type: decimal">
+<li>Fix one factor loading to 1 (“marker variable” method)</li>
+<li>Fix factor variance to 1</li>
+<li>Fix the average loading to 1 (“effect coding” method).</li>
+</ol>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>model_ws_3_alt <span class="ot">&lt;-</span><span class="st">&#39;welf_supp =~ NA*gvslvol + gvslvue + gvhlthc</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="st">welf_supp~~1*welf_supp</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="st">&#39;</span></span>
