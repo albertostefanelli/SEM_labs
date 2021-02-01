@@ -1,10 +1,10 @@
 ---
-title:  Structural Equation Modeling | Session 1
-author: D. Heerwegh, A. Alanya, A. Stefanelli, B. Meuleman
+title:  Structural Equation Modeling | Lab Session 1
+author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
 # date: "`r Sys.Date()`"
 # fontsize: 10pt 
-bibliography: /Users/serg/Library/Mobile Documents/com\~apple\~CloudDocs/academia/library.bib
-# link-citations: yes
+bibliography: lib.bib
+link-citations: yes
 output:
   #pdf_document:
   rmdformats::readthedown:
@@ -29,7 +29,7 @@ output:
 }
 
 #postamble {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 pre{
@@ -52,21 +52,21 @@ knitr::opts_chunk$set(tidy=FALSE,
   comment = '')
 options(width = 300, scipen = 9999)
 
-# install.packages("rmdformats")
-# author: D. Heerwegh^[[Dirk Heerwegh](mailto:dirk.heerwegh@soc.kuleuven.ac.be)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], B. Meuleman^[[B. Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
-
-
+# last dev version is needed for rmdformats.
+# more info https://github.com/juba/rmdformats/issues/92 
+# devtools::install_github("juba/rmdformats")
 
 ```
 
 # Lab sessions: why and how?
 
 1. Apply theoretical knowledge
-2. Increase understanding by interacting with data 3. Learn to use R and some packages within R
-3. How:
-    – Relatively unstructured
-    – Go at your own pace, try to do the exercises yourself (do yourself a favour and do not just copy paste and run the solutions)
-    - “There’s never time to do it right, but there is always time to do it over”
+2. Increase understanding by interacting with data 
+4. Lear to use some packages in R
+5. How:
+    - Relatively unstructured
+    - Go at your own pace, try to do the exercises yourself (do yourself a favour and do not just copy paste and run the solutions)
+    - “There is never time to do it right, but there is always time to do it over”
 
 ## Software used: **R**
     - This is not an R course!
@@ -79,16 +79,15 @@ options(width = 300, scipen = 9999)
 1. Data preparation
 2. Data Exploration 
 3. One-factor CFA model
-    - Model fitting
-    - Reviewing the output
-    - Model modifications
-4. A two-factor CFA model
-5. Second order CFA model
-
+    - Degrees of Freedom 
+    - Model diagnostics 
+    - Model fit statistics 
+4. A three-factor CFA model
+5. Plotting SEM 
 
 # Data 
 
-The data set used throughout is the the European Social Survey ESS4-2008 Edition 4.5 was released on 1 December 2018. We will restrict the analysis to the Belgian case.  Each line in the data set represents a Belgian respondent. The full dataset an documentation can be found on the [ESS website](https://www.europeansocialsurvey.org/data/download.html?r=4)
+The data set used throughout is the European Social Survey ESS4-2008 Edition 4.5 was released on 1 December 2018. We will restrict the analysis to the Belgian case.  Each line in the data set represents a Belgian respondent. The full dataset an documentation can be found on the [ESS website](https://www.europeansocialsurvey.org/data/download.html?r=4)
 
 Codebook:
 
@@ -131,16 +130,14 @@ First, let's load the necessary packages to load, manipulate, visualize and anal
 # install.packages("haven")                 # data import from spss
 # install.packages("dplyr")                 # data manipulation
 # install.packages("psych")                 # descriptives
+# install.packages("stringr")               # string manipulation
 
-# ### MODELING ###
+### MODELING ###
 # install.packages("lavaan")                # SEM modelling
-# install.packages("lavaan.survey")         # Wrapper around packages lavaan and survey
 
-# ### VISUALIZATION ###
-# install.packages("ggplot2")               # data visualization
-# install.packages("semPlot")               # plotting SEM models
-# install.packages("corrplot")              # correlation plots
-# install.packages("sjPlot")                # for regression output table
+### VISUALIZATION ###
+# install.packages("tidySEM")               # plotting SEM models
+# install.packages("corrplot")              # correlation/covariance plots
 
 
 # Load the packages 
@@ -148,28 +145,29 @@ First, let's load the necessary packages to load, manipulate, visualize and anal
 ### DATA MANIPULATION ###
 library("haven")        
 library("dplyr")      
-library("psych")     
+library("psych")
+library('stringr')
 
 ### MODELING ###
 library("lavaan")       
-library("lavaan.survey")      
 
 ### VISUALIZATION ###
-library("ggplot2")     
-library("scales")  
 library("corrplot")     
-library("sjPlot") 
+library("tidySEM")
 
 ```
 
+# Data exploration
+
+It is a good practice to check that everything is in order and make sense of the data that we are going to analysise. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
 
-head(ess_df, 20) #first 20 rows of the dataset
-nrow(ds) # number of subjects 
-ncol(ds) # number of variables 
-names(ds) # names of variables
+head(ess_df, 20)  # first 20 rows of the dataset
+nrow(ess_df)      # number of subjects 
+ncol(ess_df)      # number of variables 
+names(ess_df)     # names of variables
 
 
 
@@ -178,7 +176,7 @@ In this first lab, we are exploring two concepts: welfare support and welfare cr
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 ess_df_selected <- ess_df %>% select(
-                  # Welfare support items ##
+                  ## Welfare support items ##
                   gvslvol, # the old
                   gvslvue, # the unemployed
                   gvhlthc, # the sick
@@ -192,7 +190,7 @@ ess_df_selected <- ess_df %>% select(
                   sbprvpv, # poverty
                   sbeqsoc, # more equal society
                   sbcwkfm, # work and family
-                  ##	Moral criticism items # 
+                  ##	Moral criticism items ##
                   sblazy,  # people lazy 
                   sblwcoa, # care for others
                   sblwlka  # look after others
@@ -213,11 +211,12 @@ descriptive_ess <- dplyr::select(descriptive_ess,
 descriptive_ess
 
 ```
-Before getting into more complex modelling, it is worth checking the structure of the data calculating some pairwise correlations 
+Before getting into more complex modelling, it is worth checking the structure of the data by calculating the variance-covariance matrix for the items that we are going to use to fit a CFA. Let's first start with the items measuring welfare support. 
+
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
-#let's first select the first 6 items concernign welfare support
+# let's select the welfare support items 
 
 ess_df_welfare_supp <- ess_df %>% select(
                   ## Welfare support items ##
@@ -229,58 +228,366 @@ ess_df_welfare_supp <- ess_df %>% select(
                   gvpdlwk  # paid sick leave  
 )
 
-# this is a correlation matrix 
-welfare_supp_cor <- cor(ess_df_welfare_supp, # dataframe 
-                        use = "pairwise.complete.obs" #remove NAs 
+# let's calclate the sample implied covariance matrix 
+welfare_supp_cov <- cov(ess_df_welfare_supp,          # data frame 
+                        use = "pairwise.complete.obs" # remove NAs 
                         )
 
-welfare_supp_cor
+welfare_supp_cov
 
 # visual inspection is sometimes more useful
-# let's use the corrplot package 
+# we can use the corrplot package.
+# it it designed for correlation matrices 
+# but they can also plot covariance matrices
 
-corrplot::corrplot(welfare_supp_cor, 
-         method = "circle", # magnitude of correlation as circles 
-         type = "upper", # remove the bottom of the correlation matrix
-         addCoef.col = "black" # add to the plot the coefficients
+corrplot::corrplot(welfare_supp_cov, 
+         is.corr = FALSE,       # whether is a correlation matrix 
+         method = "circle",     # magnitude of covariances as circles 
+         type = "upper",        # remove the bottom of the covariance matrix
+         addCoef.col = "black"  # add to the plot the coefficients
           )
 
-# Discovering patterns in large correlation matrices: 
-# The correlation matrix can be reordered according to the correlation coefficient. 
-# This is useful for identifying the hidden structure and pattern in the matrix. 
-# “hclust” for hierarchical clustering can be employed using: order="hclust"
 
 ```
+
+# 1-factor CFA model
+
+## 1-factor model: 3 indicators
+
+Now that we have an idea of what is in our data we apply our theoretical knowledge to the our empirical data. Our measurement model will be formed by 3 items that loads on the latent factor "Welfare Support".
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+edg <- data.frame(from = "f",
+                  to = c("x1","x2","x3"),
+                  label = c("l1","l2","l3")
+)
+
+nod <- data.frame(name = c("f","x1", "x2", "x3"),
+                    shape = c("oval", "rect", "rect","rect"),
+                    label= c("Welfare Support","gvslvol (old)","gvslvue (unemployment)"," gvhlthc (sick)"),
+                    linetype = c(1,2,2,2),
+                    # colour = c("blue", "blue"),
+                    # fill = c("blue", "blue"),
+                    # size = c(2, 2),
+                     alpha = .5
+                  )
+
+graph_sem(edges = edg, nodes = nod, layout = get_layout("", "f", "",
+                                                        "x1","x2","x3",
+                                                        rows = 2),
+           angle = 170
+          )
+
+```
+
+## Degrees of freedom
+
+We can quickly check if our theoretical model has a positive degrees of freedom using the following formula.
+
+**Degrees of freedom** = Number of parameters to estimate - Pieces of informations
+
+**Pieces of informations** = $\dfrac{p(p+1)}{2}=\dfrac{3(3+1)}{2}=6$.
+
+where $p$ is the number of "manifest" indicators $i$ (also called "measured variables" or "observed indicators"), in this case gvslvol gvslvue, gvhlthc. 
+
+**Number of parameters to estimate** = $\psi{f} + \lambda_{ji} + \theta_i= 1 + 2 + 3=6$
+
+where $\psi{f}$ is the latent factor $f$ variance, $\lambda_{fi}$ is the loading on the latent factor $f$ for each observed indicator $i$, and $\theta_{i}$ is the residual variance for each observed indicator $i$.
+
+**Q:** Why $\lambda_{fi}=2$ ?
+
+**Degrees of freedom** = Number of parameters to estimate - Pieces of informations =$6-6=0$
+
+**Q:** What are the implication of having 0 degrees of freedom?
+
+Remember: 
+
+- Factor variance ($\psi{j}$): how much individuals differ on the factor
+- Factor loadings ($\lambda_{ji}$): the effect of the factor or latent variable on the measure
+- Residual (error) variance ($\theta_{i}$) : variance in the measure not attributable to the factor
+
+Let's now fit our CFA model using gvslvol, gvslvue, gvhlthc. 
 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
-install.packages("tidySEM")
-library(tidySEM)
-get_layout("x", "y", rows = 1)
+model_ws_3 <-'welf_supp =~ gvslvol + gvslvue + gvhlthc'
 
-edg <- data.frame(from = c("f","f", "f"),
-                  to = c("x1", "x2", "x3")
-                  )
+fit_ws_3 <- cfa(model_ws_3,      # model formula
+           data=ess_df_selected  # data frame
+  )
 
-nod <- prepare_graph(edges = edg, layout = get_layout("", "f", "",
-                                         "x1", "x2", "x3", rows = 2))
+summary(fit_ws_3)
+
+```
+
+## Lavaan syntax
+
+Let's take a closer look at the lavaan syntax
+
+- latent variable definition `=~` (is measured by)
+- regression `~` (is regressed on)
+- (residual) (co)variance	`~~` (is correlated with)
+- intercept	`~1` (intercept)
+- new model parameter `:=` (is equal to)
+
+So, if we want, we can freely estimate the first factor loading and fix the factor variance to 1:
+
+## Alternative model specification
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_ws_3_alt <-'welf_supp =~ NA*gvslvol + gvslvue + gvhlthc
+welf_supp~~1*welf_supp
+'
+
+fit_ws_3_alt <- cfa(model_ws_3_alt, # model formula
+           data=ess_df_selected     # data frame
+  )
+
+summary(fit_ws_3_alt)
+
+```
+
+**Q:** What is the difference between these two models?
+
+## 1-factor model: 6 indicators
+
+Since we have 3 more indicators that measure our latent construct welfare support, let's fit a model with 6 items instead of 3. This will allows us to estimate fit indices, one of the most valuable metric in a SEM model. 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_ws_6 <-'welf_supp =~ gvslvol + gvslvue + gvhlthc + gvcldcr + gvjbevn + gvpdlwk'
 
 
-nod <- data.frame(name = c("f", "x1", "x2"),
-                    shape = c("rect", "retc", "oval"),
-                    label =c("A","B","C")
-                    #linetype = c(2, 2, 2),
-                    #colour = c("blue", "blue"),
-                    #fill = c("blue", "blue"),
-                    #size = c(2, 2),
-                    #alpha = .5
-                  )
+fit_ws_6 <- cfa(model_ws_6,      # model formula
+           data=ess_df_selected  # data frame
+  )
 
-graph_sem(edges = edg, nodes = nod, layout = get_layout("", "f", "",
-                                                      "x1", "x2", "x3", rows = 2))
+
+```
+
+**Q:** Why do we have 9 degrees of freedom in this model?
+
+## Model diagnostics
+
+Important things to check after running the model:
+
+1. Estimates
+    - Do the indicators load well on the factor(s)?
+2. Model fit
+    - Are the fit indices good?
+3. Heywood cases/ reasonable solution
+    - Are variances positive? 
+    - Are $r^2$ is below 1?
+    - Are there any extreme standard errors?
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+# Returns the observed covariance matrix.
+lavInspect(fit_ws_6, "sampstat")
+# Returns the model estimated covariance matrix.
+fitted(fit_ws_6)
+# Returns the difference between the observed and estimated covariance matrix
+residuals(fit_ws_6)
+# Returns the standard errors for the free parameters in the model.
+lavTech(fit_ws_6,"se")
+# Returns the fit statistics for our model.
+fitMeasures(fit_ws_6)
+# Returns the modification indices. 
+modificationIndices(fit_ws_6)
+# Returns the parameter estimates with confidence intervals.
+parameterEstimates(fit_ws_6, standardized=TRUE)
+
+```
+Lavaan offers a quick way to check model fit and statistics 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+summary(fit_ws_6,          # fitted model 
+        fit.measures=TRUE, # returns commonly used fit measures 
+        standardized=TRUE  # indicates that we want standardized results
+        )
+
+# we can also just extract the factor loadings.
+# using lavaan terminology, the factors loadings are the lambdas
+
+inspect(fit_ws_6,           # fitted model 
+        what="std")$lambda  # standardized factors loadings
+
+# more info on the factors loading can be obtained using the tidy SEM package
+# first we extract all the estimated parameters 
+
+tidy_results <- table_results(fit_ws_6,             
+  columns = c("label", 
+              "est_sig", 
+              "se", 
+              "confint"),
+  digits = 2,
+)
+
+tidy_results %>% filter(str_detect(label, "welf_supp."))
+
+# we can also take a look at residual variances 
+# using lavaan terminology, the residual variances are the thetas
+
+theta <- round(inspect(fit_ws_6,"est")$theta,3)
+theta.std <- round(inspect(fit_ws_6,"std")$theta,3) 
+r2 <- round(inspect(fit_ws_6,"r2"),3)
+
+data.frame(row.names = c(),                     # empty the columns names 
+           Variables=colnames(theta),           # variable names 
+           "Residuals"=diag(theta),             # diagonal theta
+           "Std. Residuals"=diag(theta.std),    # diagonal std. theta
+           "R Squared"=r2                       # R-squared
+        )
+
+```
+
+## Model Fit statistics 
+
+We have two different type of fit statistics. 
+
+1. Global fit measures:
+     - They take into account how the entire entire model fit the data  
+     - (some) rules of thumb: $CFI/TLI > 0.95, RMSEA < 0.05, SRMR < 0.06$  
+     - current practice is: chi-square value + df + pvalue, RMSEA, CFI and SRMR
+     - **DO NOT** cherry pick your fit indices
+     - Check @hu_cutoff_1999
+2. "Local" fit measures: 
+      - looking at just one part of the model
+      - usually involves the use of Modification Indexes
+      - Check @thoemmes_LocalFitEvaluation_2018
+    
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+## Global fit measures ##
+# we can select which global fit measures to extract
+fitMeasures(fit_ws_6, c("logl","AIC", "BIC", "chisq", "df", "pvalue", "cfi", "tli","rmsea"), output = "matrix")
 
 
 
 ```
 
+**Q:** How our model perform in term of global fit measures?
+
+We can have a better grasp of what happing taking a look at the local fit of our model. 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+## Local fit measures: modification indices ##
+mi <- inspect(fit_ws_6,"mi")
+mi.sorted <- mi[order(-mi$mi),] # sort from high to low mi.sorted[1:5,] # only display some large MI values
+mi.sorted[1:5,] # only display some large MI values
+
+# let's plot the modification indices 
+plot(mi.sorted$mi) # plot the MI values
+abline(h=3.84) # add a horizontal reference line (chisq value for 1 df where p=0.05)
+```
+
+**Q:** What the plot is suggesting ?
+
+1. In certain contexts, we can modify the model based on a review of:
+    - MI’s in combination with EPC’s (Expected Value Change). Both need to be “substantial”
+    - Theory or the source of the data (e.g. review the content of the test items)
+2. **However**, modifying a CFA moves it away from a strictly confirmatory model
+    - The more modifications, the more exploratory the model becomes
+    - Maybe this model was not ready for a confirmatory modelling strategy?
+
+# 3-factor CFA model 
+
+We can also specify a model with more than 1 latent factor. Let's use the welfare criticism items.
+First, let's check the sample implied covariance matrix.
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+ess_df_selected <- ess_df %>% select(
+                  ## Economic criticism items ##
+                  sbstrec, # strain on economy
+                  sbbsntx, # too much taxes
+                  ##	Social criticism items ## 
+                  sbprvpv, # poverty
+                  sbeqsoc, # more equal society
+                  sbcwkfm, # work and family
+                  ##	Moral criticism items ##
+                  sblazy,  # people lazy 
+                  sblwcoa, # care for others
+                  sblwlka  # look after others
+)
+
+welfare_crit_cov <- cov(ess_df_selected, use = "pairwise.complete.obs")
+
+
+corrplot::corrplot(welfare_crit_cov, 
+         is.corr = FALSE,       # whether is a correlation matrix 
+         method = "circle",     # magnitude of covariance as circles 
+         type = "upper",        # remove the bottom of the covariance matrix
+         addCoef.col = "black"  # add to the plot the coefficients
+          )
+
+```
+
+
+Next, let's fit our 3-factor model using lavaan. The syntax is similar to the 1-factor model 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_wc <-'
+## Economic criticism ##
+wc_econo =~ sbstrec + sbbsntx
+## Social criticism ## 
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+##	Moral criticism ##
+wc_moral =~ sblazy + sblwcoa + sblwlka
+'
+
+fit_wc <- cfa(model_wc,          # model formula
+           data=ess_df_selected  # data frame
+  )
+
+summary(fit_wc)
+
+
+```
+
+# Plotting 
+
+Plotting SEM is quite common, especially when the model are rather complex. There are different packages that can be use to plot SEM in lavaan. We are going to use the  `tidySEM`  package. Compared to other packages, it can plot both lavaan and Mplus models and it is fairly intuitive. However, you can also check `semPlot`  or `lavaanPlot`.
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+# first, let's define our plot layout 
+lay <- get_layout("wc_econo", "", "", "wc_socia","", "","wc_moral", "",
+                  "sbstrec", "sbbsntx", "sbprvpv", "sbeqsoc", "sbcwkfm", "sblazy", "sblwcoa", "sblwlka", rows = 2)
+
+# let's take a look at our plot layout.
+lay
+# let's plot our results
+plot_wc <- graph_sem(model = fit_wc,      # model fit
+          layout = lay,        # layout 
+          angle = 170          # adjust the arrows 
+          #label = "est_std",  # get standardized results (not rounded)
+          )   
+
+plot_wc
+```
+
+
+With `tidySEM`, you can fully customize your plot. For instance, it is possible to highlighting a specific model element, such as the low factor loading for sbprvpv on wc_socia
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+graph_data <- prepare_graph(fit_wc)
+ 
+edges(graph_data) <- graph_data %>% 
+  edges() %>%
+  mutate(colour = "black") %>%
+  mutate(colour = replace(colour, from == "wc_socia" & to == "sbprvpv", "red"))
+
+plot(graph_data,
+     layout = lay,        # layout 
+     angle = 170          # adjust the arrows 
+  )
+
+```
+
+# References 

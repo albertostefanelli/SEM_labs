@@ -1,0 +1,436 @@
+---
+title:  Structural Equation Modeling | Exercises 1
+author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
+# date: "`r Sys.Date()`"
+# fontsize: 10pt 
+bibliography: lib.bib
+link-citations: yes
+output:
+  #pdf_document:
+  rmdformats::readthedown:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: false
+    highlight: tango
+    use_bookdown: true
+    fig_width: 12
+    fig_height: 8
+# header-includes
+---
+<style type="text/css">
+#content {
+    max-width: 1500px !important;
+/*    !margin-left: 300px !important;
+*/
+}
+#table-of-contents {
+    width: 300px !important;
+}
+
+#postamble {
+  font-size: 10px;
+}
+
+pre{
+  background-color: #FFFFFF;
+    font-size: 12px;
+}
+pre:not([class]) {
+  background-color: #D8D8D8;
+    color: black;
+}
+
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(tidy=FALSE, 
+  fig.show = 'hold', 
+  fig.align = "center", 
+  warning = FALSE, 
+  message = FALSE, 
+  comment = '')
+options(width = 300, scipen = 9999)
+
+# last dev version is needed for rmdformats.
+# more info https://github.com/juba/rmdformats/issues/92 
+# devtools::install_github("juba/rmdformats")
+
+```
+
+
+# What we are going to do
+
+1. Ex.1 -- Local Model Fit
+2. Ex.2 -- Calculate the model-implied covariance matrix
+3. Ex.3 -- 1-factor- vs 2-factor-model 
+4. Ex.4 -- Fit a second-order CFA
+5. Ex.5 -- Compare second-order with first-order CFA 
+
+# Dataset 
+
+The data set used throughout is still the European Social Survey ESS4-2008 Edition 4.5. We will restrict the analysis to the Belgian case.
+
+Codebook:
+
+- **gvslvol** Standard of living for the old, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvslvue** Standard of living for the unemployed, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvhlthc** Health care for the sick, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvcldcr** Child care services for working parents, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvjbevn** Job for everyone, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvpdlwk** Paid leave from work to care for sick family, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+
+- **sbstrec** Social benefits/services place too great strain on economy (1 Agree strongly - 5 Disagree strongly)
+- **sbbsntx** Social benefits/services cost businesses too much in taxes/charges (1 Agree strongly - 5 Disagree strongly)
+- **sbprvpv** Social benefits/services prevent widespread poverty (1 Agree strongly - 5 Disagree strongly)
+- **sbeqsoc** Social benefits/services lead to a more equal society (1 Agree strongly - 5 Disagree strongly)
+- **sbcwkfm** Social benefits/services make it easier to combine work and family (1 Agree strongly - 5 Disagree strongly)
+- **sblazy**  Social benefits/services make people lazy (1 Agree strongly - 5 Disagree strongly)
+- **sblwcoa** Social benefits/services make people less willing care for one another (1 Agree strongly - 5 Disagree strongly)
+- **sblwlka** Social benefits/services make people less willing look after themselves/family (1 Agree strongly - 5 Disagree strongly)
+
+# Environment preparation 
+
+First, let's load the necessary packages to load, manipulate, visualize and analyse the data. 
+
+```{r, echo=T, message=FALSE, warning=FALSE,cache=F}
+
+
+# Uncomment this once if you need to install the packages on your system 
+
+### DATA MANIPULATION ###
+# install.packages("haven")                 # data import from spss
+# install.packages("dplyr")                 # data manipulation
+# install.packages("psych")                 # descriptives
+# install.packages("stringr")               # string manipulation
+
+### MODELING ###
+# install.packages("lavaan")                # SEM modelling
+# install.packages("lavaan.survey")         # Wrapper around packages lavaan and survey
+
+### VISUALIZATION ###
+# install.packages("tidySEM")               # plotting SEM models
+# install.packages("corrplot")              # correlation plots
+
+
+# Load the packages 
+
+### DATA MANIPULATION ###
+library("haven")        
+library("dplyr")      
+library("psych")
+library('stringr')
+
+### MODELING ###
+library("lavaan")       
+
+### VISUALIZATION ###
+library("tidySEM")
+library("corrplot")     
+
+
+```
+
+
+# Ex.1 -- Local Model Fit
+
+1. Fit the welfare support model with 6 items
+2. Modify the model by allowing error correlations and refit the model
+3. Review the parameter estimates and compare to the first model
+4. Review the fit statistics (global and local)
+5. Verify that the new model indeed fits the data better (perform a chi-squared difference test)
+6. Consider modifying the model even further based on the MIs, revise the model further. Describe its implications (OPTIONAL)
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+
+model_ws_6_1 <-'welf_supp =~ gvslvol + gvslvue + gvhlthc + gvcldcr + gvjbevn + gvpdlwk'
+
+
+fit_ws_6_1 <- cfa(model_ws_6_1,   # model formula
+           data=ess_df            # data frame
+  )
+
+model_ws_6_2 <-'
+welf_supp =~ gvslvol + gvslvue + gvhlthc + gvcldcr + gvjbevn + gvpdlwk
+gvslvol~~gvhlthc
+gvcldcr~~gvpdlwk
+'
+
+fit_ws_6_2 <- cfa(model_ws_6_2,   # model formula
+           data=ess_df            # data frame
+  )
+
+
+fitm_model_ws_6_1 <-  fitMeasures(fit_ws_6_1, c("logl",
+                                                  "AIC", 
+                                                  "BIC", 
+                                                  "chisq",
+                                                  "df",
+                                                  "pvalue",
+                                                  "cfi",
+                                                  "tli",
+                                                  "rmsea"), output = "matrix")
+
+fitm_model_ws_6_2 <- fitMeasures(fit_ws_6_2, c("logl",
+                                                  "AIC", 
+                                                  "BIC", 
+                                                  "chisq",
+                                                  "df",
+                                                  "pvalue",
+                                                  "cfi",
+                                                  "tli",
+                                                  "rmsea"), output = "matrix")
+
+
+data.frame(Fit=rownames(fitm_model_ws_6_1),
+           "model_ws_6_1" = round(fitm_model_ws_6_1[,1],2),
+           "model_ws_6_2" = round(fitm_model_ws_6_2[,1],2)
+
+  
+)
+
+anova(fit_ws_6_1,fit_ws_6_2)
+
+
+```
+
+
+# Ex.2 -- Calculate the model-implied covariance matrix
+
+1. For the previous models, request the model-implied covariance of the matrix using lavaan’s inspect function.
+2. Calculate the model-implied covariance matrix using the formula:
+3. Compare the two matrices 
+4. Calculate the differences between the two matrices (OPTIONAL)
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+# model-implied var-covariance matrix for observed variables
+inspect(fit_ws_6_1, "cov.ov") 
+# same thing, but calculated from model parameters
+inspect(fit_ws_6_1, "est")$lambda %*% inspect(fit_ws_6_1, "est")$psi %*% t(inspect(fit_ws_6_1, "est")$lambda) + inspect(fit_ws_6_1, "est")$theta
+# differences between the two matrices 
+inspect(fit_ws_6_2, "cov.ov") - inspect(fit_ws_6_1, "cov.ov")
+
+
+```
+
+# Ex.3  -- 1-factor- vs 3-factor-model 
+
+1. Using the welfare criticism items, fit a 1-factor model. 
+2. Using the welfare criticism items, fit a 3-factor model. 
+3. Verify whether a 1-factor CFA model is appropriate.
+    - Review the model parameters. 
+    - Compare the model fit statistics using a tabular form.
+4. Modify the 3-factor model by dropping items and/or allowing error correlations and compare it with the original model (OPTIONAL)
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_wc_1_factor <-'
+wc_crit =~ sbstrec + sbbsntx + sbprvpv + sbeqsoc + sbcwkfm + sblazy + sblwcoa + sblwlka
+'
+
+fit_wc_1_factor <- cfa(model_wc_1_factor, # model formula
+           data=ess_df                    # data frame
+  )
+
+summary(fit_wc_1_factor)
+
+model_wc_3_factor <-'
+## Economic criticism ##
+wc_econo =~ sbstrec + sbbsntx
+## Social criticism ## 
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+##	Moral criticism ##
+wc_moral =~ sblazy + sblwcoa + sblwlka
+'
+
+fit_wc_3_factor <- cfa(model_wc_3_factor,  # model formula
+                      data=ess_df          # data frame
+  )
+
+summary(fit_wc_3_factor)
+
+
+fitm_model_wc_1_factor <-  fitMeasures(fit_wc_1_factor, c("logl",
+                                                  "AIC", 
+                                                  "BIC", 
+                                                  "chisq",
+                                                  "df",
+                                                  "pvalue",
+                                                  "cfi",
+                                                  "tli",
+                                                  "rmsea"), output = "matrix")
+
+fitm_model_wc_3_factor <- fitMeasures(fit_wc_3_factor, c("logl",
+                                                  "AIC", 
+                                                  "BIC", 
+                                                  "chisq",
+                                                  "df",
+                                                  "pvalue",
+                                                  "cfi",
+                                                  "tli",
+                                                  "rmsea"), output = "matrix")
+
+
+
+
+
+
+data.frame("Fit Indices" = rownames(fitm_model_wc_1_factor),
+           "model_wc_1_factor" = round(fitm_model_wc_1_factor[, 1], 2),
+           "model_wc_3_factor" = round(fitm_model_wc_3_factor[, 1], 2)
+
+  
+)
+
+## OPTIONAL ##
+
+model_wc_3_factor_mod <-'
+## Economic criticism ##
+wc_econo =~ sbstrec + sbbsntx
+## Social criticism ## 
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+##	Moral criticism ##
+wc_moral =~ sblazy + sblwcoa + sblwlka
+sblwcoa ~~ sblwlka
+'
+
+fit_wc_3_factor_mod <- cfa(model_wc_3_factor_mod, # model formula
+           data=ess_df                            # data frame
+  )
+
+summary(fit_wc_3_factor_mod)
+
+fitm_model_wc_3_factor_mod <- fitMeasures(fit_wc_3_factor_mod, c("logl",
+                                                  "AIC", 
+                                                  "BIC", 
+                                                  "chisq",
+                                                  "df",
+                                                  "pvalue",
+                                                  "cfi",
+                                                  "tli",
+                                                  "rmsea"), output = "matrix")
+
+
+data.frame("Fit Indices"=rownames(fitm_model_wc_1_factor),
+           "model_wc_3_factor" = round(fitm_model_wc_3_factor[, 1], 2),
+           "model_wc_3_factor_mod" = round(fitm_model_wc_3_factor_mod[, 1], 2)
+  
+)
+
+```
+
+# Ex.4 -- Second order model  
+
+1. Fit a second-order model with the three dimensions of welfare criticism.
+2. Review the model output using the summary function. Does the model fit well?
+3. Review the $R^2$ values of the first-order latent variables. Which first-order factor is explained best by
+the second-order factor?
+4. Request model modification indices and explore model modifications.
+5. Remove low loadings and see if the model improves (OPTIONAL)
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_wc_2_order <-'
+## Economic criticism ##
+wc_econo =~ sbstrec + sbbsntx
+## Social criticism ## 
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+##	Moral criticism ##
+wc_moral =~ sblazy + sblwcoa + sblwlka
+## Second Order Welfare Criticism ## 
+wc_crit =~ wc_econo + wc_socia + wc_moral
+'
+
+fit_wc_2_order <- cfa(model_wc_2_order,  # model formula
+                      data=ess_df        # data frame
+  )
+
+summary(fit_wc_2_order)
+
+inspect(fit_wc_2_order, "r2")
+
+mi<-inspect(fit_wc_2_order, "mi") 
+# sort from high to low mi.sorted[1:5,] 
+mi.sorted<-mi[order(-mi$mi), ] 
+# # only display some large MI values
+head(mi.sorted, 5)
+```
+
+Maybe does not makes sense to impose other modifications for this model. 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+## OPTIONAL ##
+
+model_wc_2_order_mod <-'
+## Economic criticism ##
+wc_econo =~ sbstrec + sbbsntx
+## Social criticism ## 
+wc_socia =~ sbprvpv + sbeqsoc
+##	Moral criticism ##
+wc_moral =~ sblazy + sblwcoa + sblwlka
+## Second Order Welfare Criticism ## 
+wc_crit =~ wc_econo + wc_socia + wc_moral
+'
+
+fit_wc_2_order_mod <- cfa(model_wc_2_order_mod,  # model formula
+                          data=ess_df            # data frame
+  ) 
+
+summary(fit_wc_2_order_mod)
+
+
+```
+
+The model does not fit. Why is it the case ? 
+
+
+# Ex.5 -- Compare first-order with second-order model
+
+1. How many degrees of freedom are lost between the two models? Why?
+2. Statistically compare model fit: does the second-order factor model fit significantly worse than the
+first-order factor model?
+3. Refit the first-order model without latent factor correlations and compare the fit (OPTIONAL)
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+summary(fit_wc_3_factor)
+summary(fit_wc_2_order)
+
+anova(fit_wc_3_factor, fit_wc_2_order)
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+## OPTIONAL ##
+
+model_wc_3_factor_corr <-'
+## Economic criticism ##
+wc_econo =~ sbstrec + sbbsntx
+## Social criticism ## 
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+##	Moral criticism ##
+wc_moral =~ sblazy + sblwcoa + sblwlka
+wc_econo ~~ 1*wc_socia 
+wc_econo ~~ 1*wc_moral
+wc_socia ~~ 1*wc_moral
+'
+
+fit_wc_3_factor_corr <- cfa(model_wc_3_factor_corr,  # model formula
+                            data=ess_df              # data frame
+  )
+
+summary(fit_wc_3_factor_corr)
+
+
+anova(fit_wc_2_order, fit_wc_3_factor_corr)
+
+
+```
+Based on the $\chi^2$ difference test, the first-order model without latent factor correlations fits the data better. 
+
+
