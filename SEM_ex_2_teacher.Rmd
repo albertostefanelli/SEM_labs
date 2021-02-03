@@ -92,7 +92,7 @@ In addition, we will use some other variables
 
 - **agea** Respondent's age
 - **eduyrs** Years of full-time education completed
-- **gndr** Gender (1 Male, 2 Feamle)
+- **gndr** Gender (1 Male, 2 Female)
 - **hinctnta** Household's total net income, all sources (Deciles of the actual household income range in Belgium)
 
 - **gincdif** Government should reduce differences in income levels  (1 Agree strongly - 5 Disagree strongly)
