@@ -149,7 +149,7 @@ model_ws_6_1 <-'welf_supp =~ gvslvol + gvslvue + gvhlthc + gvcldcr + gvjbevn + g
 
 
 fit_ws_6_1 <- cfa(model_ws_6_1,   # model formula
-           data=ess_df            # data frame
+                 data = ess_df    # data frame
   )
 
 model_ws_6_2 <-'
@@ -159,7 +159,7 @@ gvcldcr~~gvpdlwk
 '
 
 fit_ws_6_2 <- cfa(model_ws_6_2,   # model formula
-           data=ess_df            # data frame
+                  data = ess_df   # data frame
   )
 
 
@@ -233,7 +233,7 @@ wc_crit =~ sbstrec + sbbsntx + sbprvpv + sbeqsoc + sbcwkfm + sblazy + sblwcoa + 
 '
 
 fit_wc_1_factor <- cfa(model_wc_1_factor, # model formula
-           data=ess_df                    # data frame
+                      data = ess_df       # data frame
   )
 
 summary(fit_wc_1_factor)
@@ -248,7 +248,7 @@ wc_moral =~ sblazy + sblwcoa + sblwlka
 '
 
 fit_wc_3_factor <- cfa(model_wc_3_factor,  # model formula
-                      data=ess_df          # data frame
+                      data = ess_df        # data frame
   )
 
 summary(fit_wc_3_factor)
@@ -299,7 +299,7 @@ sblwcoa ~~ sblwlka
 '
 
 fit_wc_3_factor_mod <- cfa(model_wc_3_factor_mod, # model formula
-           data=ess_df                            # data frame
+                           data = ess_df         # data frame
   )
 
 summary(fit_wc_3_factor_mod)
@@ -315,7 +315,7 @@ fitm_model_wc_3_factor_mod <- fitMeasures(fit_wc_3_factor_mod, c("logl",
                                                   "rmsea"), output = "matrix")
 
 
-data.frame("Fit Indices"=rownames(fitm_model_wc_1_factor),
+data.frame("Fit Indices" = rownames(fitm_model_wc_1_factor),
            "model_wc_3_factor" = round(fitm_model_wc_3_factor[, 1], 2),
            "model_wc_3_factor_mod" = round(fitm_model_wc_3_factor_mod[, 1], 2)
   
@@ -347,7 +347,7 @@ wc_crit =~ wc_econo + wc_socia + wc_moral
 '
 
 fit_wc_2_order <- cfa(model_wc_2_order,  # model formula
-                      data=ess_df        # data frame
+                      data = ess_df      # data frame
   )
 
 summary(fit_wc_2_order)
@@ -378,7 +378,7 @@ wc_crit =~ wc_econo + wc_socia + wc_moral
 '
 
 fit_wc_2_order_mod <- cfa(model_wc_2_order_mod,  # model formula
-                          data=ess_df            # data frame
+                          data = ess_df          # data frame
   ) 
 
 summary(fit_wc_2_order_mod)
@@ -394,7 +394,7 @@ The model does not fit. Why is it the case ?
 1. How many degrees of freedom are lost between the two models? Why?
 2. Statistically compare model fit: does the second-order factor model fit significantly worse than the
 first-order factor model?
-3. Refit the first-order model without latent factor correlations and compare the fit (OPTIONAL)
+3. Fit a model with social and moral criticism of the welfare state as latent variable. Remove the latent factors correlations. Compare the fit (OPTIONAL). 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 summary(fit_wc_3_factor)
@@ -408,29 +408,24 @@ anova(fit_wc_3_factor, fit_wc_2_order)
 
 ## OPTIONAL ##
 
-model_wc_3_factor_corr <-'
-## Economic criticism ##
-wc_econo =~ sbstrec + sbbsntx
+model_wc_2_factor_corr <-'
+
 ## Social criticism ## 
 wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
 ##	Moral criticism ##
 wc_moral =~ sblazy + sblwcoa + sblwlka
-wc_econo ~~ 1*wc_socia 
-wc_econo ~~ 1*wc_moral
-wc_socia ~~ 1*wc_moral
+
+## fixing covariance of LV to zero 
+wc_socia ~~ 0*wc_moral
 '
 
-fit_wc_3_factor_corr <- cfa(model_wc_3_factor_corr,  # model formula
-                            data=ess_df              # data frame
+fit_wc_2_factor_corr <- cfa(model_wc_2_factor_corr,  # model formula
+                            data = ess_df            # data frame
   )
 
-summary(fit_wc_3_factor_corr)
-
-
-anova(fit_wc_2_order, fit_wc_3_factor_corr)
+summary(fit_wc_2_factor_corr, fit.measures=TRUE)
 
 
 ```
-Based on the $\chi^2$ difference test, the first-order model without latent factor correlations fits the data better. 
 
 

@@ -64,7 +64,7 @@ options(width = 300, scipen = 9999)
 
 1. Apply theoretical knowledge
 2. Increase understanding by interacting with data 
-4. Lear to use some packages in R
+4. Learn to use some packages in R
 5. How:
     - Relatively unstructured
     - Go at your own pace, try to do the exercises yourself (do yourself a favour and do not just copy paste and run the solutions)
@@ -79,7 +79,7 @@ options(width = 300, scipen = 9999)
 # What we are going to cover 
 
 1. Data preparation
-2. Data Exploration 
+2. Data exploration 
 3. One-factor CFA model
     - Degrees of Freedom 
     - Model diagnostics 
@@ -161,7 +161,7 @@ library("tidySEM")
 
 # Data exploration
 
-It is a good practice to check that everything is in order and make sense of the data that we are going to analysise. 
+It is a good practice to check that everything is in order and make sense of the data that we are going to analyze. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
@@ -230,7 +230,7 @@ ess_df_welfare_supp <- ess_df %>% select(
                   gvpdlwk  # paid sick leave  
 )
 
-# let's calclate the sample implied covariance matrix 
+# let's calculate the sample implied covariance matrix 
 welfare_supp_cov <- cov(ess_df_welfare_supp,          # data frame 
                         use = "pairwise.complete.obs" # remove NAs 
                         )
@@ -240,15 +240,17 @@ welfare_supp_cov
 # visual inspection is sometimes more useful
 # we can use the corrplot package.
 # it it designed for correlation matrices 
-# but they can also plot covariance matrices
+# but they can also plot covariance matrices 
 
-corrplot::corrplot(welfare_supp_cov, 
-         is.corr = FALSE,       # whether is a correlation matrix 
-         method = "circle",     # magnitude of covariances as circles 
-         type = "upper",        # remove the bottom of the covariance matrix
-         addCoef.col = "black"  # add to the plot the coefficients
-          )
-
+welfare_supp_cor <- cov2cor(welfare_supp_cov)
+ welfare_supp_cor
+ 
+ corrplot::corrplot(welfare_supp_cor, 
+                    is.corr = FALSE,       # whether is a correlation matrix 
+                    method = "circle",     # magnitude of covariances as circles 
+                    type = "upper",        # remove the bottom of the covariance matrix
+                    addCoef.col = "black"  # add to the plot the coefficients
+ )
 
 ```
 
@@ -290,14 +292,14 @@ Sorts of identification:
 
 1. non-identified: $df < 0$, impossible to estimate parameters
 2. over-identified: $df > 0$, we should strive for this
-3. just-identified: $df = 0$, it’s ok, but the fit cannot be assessed
+3. just-identified: $df = 0$, it is ok, but the fit cannot be assessed
 4. empirical under-identification: it can happen when two or more indicators are highly correlated (multicollinearity)
 
 We can quickly check if our model has positive degrees of freedom using the following formula.
 
-**Degrees of freedom** = Number of parameters to estimate - Pieces of informations
+**Degrees of freedom** = Number of parameters to estimate - Pieces of information
 
-**Pieces of informations** = $\dfrac{p(p+1)}{2}=\dfrac{3(3+1)}{2}=6$.
+**Pieces of information** = $\dfrac{p(p+1)}{2}=\dfrac{3(3+1)}{2}=6$.
 
 where $p$ is the number of "manifest" indicators $i$ (also called "measured variables" or "observed indicators"), in this case gvslvol gvslvue, gvhlthc. 
 
@@ -324,8 +326,8 @@ Let's now fit our CFA model using gvslvol, gvslvue, gvhlthc.
 
 model_ws_3 <-'welf_supp =~ gvslvol + gvslvue + gvhlthc'
 
-fit_ws_3 <- cfa(model_ws_3,      # model formula
-           data=ess_df_selected  # data frame
+fit_ws_3 <- cfa(model_ws_3,             # model formula
+                data = ess_df_selected  # data frame
   )
 
 summary(fit_ws_3)
@@ -354,12 +356,13 @@ Remember: Every factor in CFA should be given a metric to be identified.
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
-model_ws_3_alt <-'welf_supp =~ NA*gvslvol + gvslvue + gvhlthc
+model_ws_3_alt <-'
+welf_supp =~ NA*gvslvol + gvslvue + gvhlthc
 welf_supp~~1*welf_supp
 '
 
-fit_ws_3_alt <- cfa(model_ws_3_alt, # model formula
-           data=ess_df_selected     # data frame
+fit_ws_3_alt <- cfa(model_ws_3_alt,            # model formula
+                    data = ess_df_selected     # data frame
   )
 
 summary(fit_ws_3_alt)
@@ -377,8 +380,8 @@ Since we have 3 more indicators that measure our latent construct welfare suppor
 model_ws_6 <-'welf_supp =~ gvslvol + gvslvue + gvhlthc + gvcldcr + gvjbevn + gvpdlwk'
 
 
-fit_ws_6 <- cfa(model_ws_6,      # model formula
-           data=ess_df_selected  # data frame
+fit_ws_6 <- cfa(model_ws_6,             # model formula
+                data = ess_df_selected  # data frame
   )
 
 
@@ -408,7 +411,7 @@ fitted(fit_ws_6)
 # Returns the difference between the observed and estimated covariance matrix
 residuals(fit_ws_6)
 # Returns the standard errors for the free parameters in the model.
-lavTech(fit_ws_6,"se")
+lavTech(fit_ws_6, "se")
 # Returns the fit statistics for our model.
 fitMeasures(fit_ws_6)
 # Returns the modification indices. 
@@ -421,9 +424,9 @@ Lavaan offers a quick way to check model fit and statistics
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
-summary(fit_ws_6,          # fitted model 
-        fit.measures=TRUE, # returns commonly used fit measures 
-        standardized=TRUE  # indicates that we want standardized results
+summary(fit_ws_6,            # fitted model 
+        fit.measures = TRUE, # returns commonly used fit measures 
+        standardized = TRUE  # indicates that we want standardized results
         )
 
 # we can also just extract the factor loadings.
@@ -440,7 +443,7 @@ tidy_results <- table_results(fit_ws_6,
               "est_sig", 
               "se", 
               "confint"),
-  digits = 2,
+  digits = 2
 )
 
 tidy_results %>% filter(str_detect(label, "welf_supp."))
@@ -448,15 +451,15 @@ tidy_results %>% filter(str_detect(label, "welf_supp."))
 # we can also take a look at residual variances 
 # using lavaan terminology, the residual variances are the thetas
 
-theta <- round(inspect(fit_ws_6,"est")$theta,3)
-theta.std <- round(inspect(fit_ws_6,"std")$theta,3) 
-r2 <- round(inspect(fit_ws_6,"r2"),3)
+theta <- round(inspect(fit_ws_6, "est")$theta,3)
+theta.std <- round(inspect(fit_ws_6, "std")$theta,3) 
+r2 <- round(inspect(fit_ws_6, "r2"),3)
 
-data.frame(row.names = c(),                     # empty the columns names 
-           Variables=colnames(theta),           # variable names 
-           "Residuals"=diag(theta),             # diagonal theta
-           "Std. Residuals"=diag(theta.std),    # diagonal std. theta
-           "R Squared"=r2                       # R-squared
+data.frame(row.names = c(),                       # empty the columns names 
+           Variables = colnames(theta),           # variable names 
+           "Residuals" = diag(theta),             # diagonal theta
+           "Std. Residuals" = diag(theta.std),    # diagonal std. theta
+           "R Squared" = r2                       # R-squared
         )
 
 ```
@@ -486,9 +489,9 @@ fitMeasures(fit_ws_6, c("logl","AIC", "BIC", "chisq", "df", "pvalue", "cfi", "tl
 
 ```
 
-**Q:** How our model perform in term of global fit measures?
+**Q:** How our model perform in terms of global fit measures?
 
-We can have a better grasp of what happing taking a look at the local fit of our model. 
+We can have a better grasp of what is happening taking a look at the local fit of our model. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 ## Local fit measures: modification indices ##
@@ -532,12 +535,13 @@ ess_df_selected <- ess_df %>% select(
 
 welfare_crit_cov <- cov(ess_df_selected, use = "pairwise.complete.obs")
 
+welfare_crit_cor <- cov2cor(welfare_crit_cov)
 
-corrplot::corrplot(welfare_crit_cov, 
-         is.corr = FALSE,       # whether is a correlation matrix 
-         method = "circle",     # magnitude of covariance as circles 
-         type = "upper",        # remove the bottom of the covariance matrix
-         addCoef.col = "black"  # add to the plot the coefficients
+corrplot::corrplot(welfare_crit_cor, 
+                   is.corr = FALSE,       # whether is a correlation matrix 
+                   method = "circle",     # magnitude of covariance as circles 
+                   type = "upper",        # remove the bottom of the covariance matrix
+                   addCoef.col = "black"  # add to the plot the coefficients
           )
 
 ```
@@ -556,8 +560,8 @@ wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
 wc_moral =~ sblazy + sblwcoa + sblwlka
 '
 
-fit_wc <- cfa(model_wc,          # model formula
-           data=ess_df_selected  # data frame
+fit_wc <- cfa(model_wc,              # model formula
+             data = ess_df_selected  # data frame
   )
 
 summary(fit_wc)
@@ -578,9 +582,9 @@ lay <- get_layout("wc_econo", "", "", "wc_socia","", "","wc_moral", "",
 lay
 # let's plot our results
 plot_wc <- graph_sem(model = fit_wc,      # model fit
-          layout = lay,        # layout 
-          angle = 170          # adjust the arrows 
-          #label = "est_std",  # get standardized results (not rounded)
+                    layout = lay,         # layout 
+                    angle = 170           # adjust the arrows 
+                    #label = "est_std",  # get standardized results (not rounded)
           )   
 
 plot_wc
