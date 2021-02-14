@@ -141,7 +141,19 @@ library("purrr")
 - What is the effect of such a bias? Would we draw incorrect conclusions?
 - Can we detect whether such bias is present in our data?
 
-There are different types of measurment equivalence:
+
+Pros:
+
+– Simultaneously testing a CFA model in multiple groups 
+– Possible to test equality of each parameter
+
+Cons:
+
+– Requires a larger sample size than the MIMIC approach 
+– Requires more programming
+– Not very elegant for comparing many groups
+
+There are different types of measurement equivalence:
 
 1. **Configural Invariance**
     - same factor structure in each group

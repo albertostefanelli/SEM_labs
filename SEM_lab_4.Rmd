@@ -1,0 +1,431 @@
+---
+title:  Structural Equation Modeling | Lab Session 4
+author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
+# date: "`r Sys.Date()`"
+# fontsize: 10pt 
+bibliography: lib.bib
+link-citations: yes
+output:
+  #pdf_document:
+  rmdformats::readthedown:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: false
+    highlight: tango
+    use_bookdown: true
+    fig_width: 12
+    fig_height: 8
+# header-includes
+---
+<style type="text/css">
+#content {
+    max-width: 1500px !important;
+/*    !margin-left: 300px !important;
+*/
+}
+#table-of-contents {
+    width: 300px !important;
+}
+
+#postamble {
+  font-size: 10px;
+}
+
+pre{
+  background-color: #FFFFFF;
+    font-size: 12px;
+}
+pre:not([class]) {
+  background-color: #D8D8D8;
+    color: black;
+}
+
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(tidy=FALSE, 
+  fig.show = 'hold', 
+  fig.align = "center", 
+  warning = FALSE, 
+  message = FALSE, 
+  comment = '')
+options(width = 300, scipen = 9999)
+
+# last dev version is needed for rmdformats.
+# more info https://github.com/juba/rmdformats/issues/92 
+# devtools::install_github("juba/rmdformats")
+
+```
+
+
+# What we are going to cover 
+
+1. Non-normal continuous data
+2. Categorical data
+3. Missing data
+
+# Data 
+
+The data set used throughout is the European Social Survey ESS4-2008 Edition 4.5 was released on 1 December 2018. We will restrict the analysis to the Belgian case.  Each line in the data set represents a Belgian respondent. The full dataset an documentation can be found on the [ESS website](https://www.europeansocialsurvey.org/data/download.html?r=4)
+
+Codebook:
+
+- **gvslvol** Standard of living for the old, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvslvue** Standard of living for the unemployed, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvhlthc** Health care for the sick, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvcldcr** Child care services for working parents, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvjbevn** Job for everyone, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvpdlwk** Paid leave from work to care for sick family, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+
+- **sbstrec** Social benefits/services place too great strain on economy (1 Agree strongly - 5 Disagree strongly)
+- **sbbsntx** Social benefits/services cost businesses too much in taxes/charges (1 Agree strongly - 5 Disagree strongly)
+- **sbprvpv** Social benefits/services prevent widespread poverty (1 Agree strongly - 5 Disagree strongly)
+- **sbeqsoc** Social benefits/services lead to a more equal society (1 Agree strongly - 5 Disagree strongly)
+- **sbcwkfm** Social benefits/services make it easier to combine work and family (1 Agree strongly - 5 Disagree strongly)
+- **sblazy**  Social benefits/services make people lazy (1 Agree strongly - 5 Disagree strongly)
+- **sblwcoa** Social benefits/services make people less willing care for one another (1 Agree strongly - 5 Disagree strongly)
+- **sblwlka** Social benefits/services make people less willing look after themselves/family (1 Agree strongly - 5 Disagree strongly)
+
+- **agea** Respondent's age
+- **eduyrs** Years of full-time education completed
+- **gndr** Gender (1 Male, 2 Female)
+- **hinctnta** Household's total net income, all sources (Deciles of the actual household income range in the given country.)
+
+- **gincdif** Government should reduce differences in income levels  (1 Agree strongly - 5 Disagree strongly)
+- **dfincac** Large differences in income acceptable to reward talents and efforts  (1 Agree strongly - 5 Disagree strongly)
+- **smdfslv** For fair society, differences in standard of living should be small  (1 Agree strongly - 5 Disagree strongly)
+
+
+# Environment preparation 
+
+First, let's load the necessary packages to load, manipulate, visualize and analyse the data. 
+
+```{r, echo=T, message=FALSE, warning=FALSE,cache=F}
+
+
+# Uncomment this once if you need to install the packages on your system 
+
+### DATA MANIPULATION ###
+# install.packages("haven")                 # data import from spss
+# install.packages("dplyr")                 # data manipulation
+# install.packages("psych")                 # descriptives
+# install.packages("stringr")               # string manipulation
+# install.packages("purrr")                 # table manipulation 
+
+### MODELING ###
+# install.packages("lavaan")                # SEM modelling
+# install.packages("MVN")                   # tests for multivariate normality
+# install.packages("Amelia")                # performing multiple imputation
+
+### VISUALIZATION ###
+# install.packages("tidySEM")               # plotting SEM models
+# install.packages("ggplot2")               # plotting 
+# install.packages("patchwork")             # organization plots
+
+# Load the packages 
+
+### DATA MANIPULATION ###
+library("haven")        
+library("dplyr")      
+library("psych")
+library("stringr")
+library("purrr")
+
+### MODELING ###
+library("lavaan")       
+library("MVN")
+library("Amelia")
+
+### VISUALIZATION ###
+library("tidySEM")
+library("ggplot2")              
+library("patchwork")    
+
+
+```
+
+# Non-normal, continuous data
+
+Special data analytic techniques for non-normal continuous variables should be used if any of the continuous variables in the model are non-normal. maximum likelihood (ML) with non normal continuous variables results in biased standard errors and model fit deterioration. Practically, this means that that chi-square will be erroneously too large and standard errors are too small increasing the probability of TYpe-1 errors. The parameter estimates (e.g., loadings, regression coefficients) are largely unaffected (Finch, West, & MacKinnon, 1997).
+
+## Detecting non-normality 
+
+Unadjusted ML analysis approach most commonly employed for SEM assumes multivariate normality. One first step to assess multivariate normality consist in checking if the univariate distributions are normal. If the univariate distributions are non-normal, then the multivariate distribution will be non normal. We can plot the univariate distribution of our variables and perform a Kolmogorov-Smirnov test. 
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+
+# We are going to measure welfare support using 4 items: gvslvol gvhlthc gvcldcr gvpdlwk
+# First let's visually inspect our variables 
+
+h_gvslvol <- ggplot(ess_df, aes(gvslvol)) +
+        geom_blank() +
+        geom_histogram(aes(y = ..density..), binwidth = 1, colour = "black", alpha=0.3)
+
+h_gvhlthc <- ggplot(ess_df, aes(gvhlthc)) +
+        geom_blank() +
+        geom_histogram(aes(y = ..density..), binwidth = 1, colour = "black", alpha=0.3)
+
+h_gvcldcr <- ggplot(ess_df, aes(gvcldcr)) +
+        geom_blank() +
+        geom_histogram(aes(y = ..density..), binwidth = 1, colour = "black", alpha=0.3)
+
+h_gvpdlwk <- ggplot(ess_df, aes(gvpdlwk)) +
+        geom_blank() +
+        geom_histogram(aes(y = ..density..), binwidth = 1, colour = "black", alpha=0.3)
+
+h_gvslvol + h_gvhlthc + h_gvcldcr + h_gvpdlwk
+  
+
+```
+
+We can check if a distribution is normal (or almost) using Kolmogorov-Smirnov (KS) test. The KS test returns a D statistic and a p-value corresponding to the D statistic. The D statistic is the absolute maximum distance between the cumulative distribution function of our variable and a randomly generated normally distributed variable with the same mean and standard deviation. The closer D is to 0 the more the distribution of our variable resemble a normal distribution. 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+ks_gvslvol <- ks.test(ess_df$gvslvol, "pnorm", mean=mean(ess_df$gvslvol, na.rm=T), sd=sd(ess_df$gvslvol, na.rm=T))
+ks_gvhlthc <- ks.test(ess_df$gvhlthc, "pnorm", mean=mean(ess_df$gvhlthc, na.rm=T), sd=sd(ess_df$gvhlthc, na.rm=T))
+ks_gvcldcr <- ks.test(ess_df$gvcldcr, "pnorm", mean=mean(ess_df$gvcldcr, na.rm=T), sd=sd(ess_df$gvcldcr, na.rm=T))
+ks_gvpdlwk <- ks.test(ess_df$gvpdlwk, "pnorm", mean=mean(ess_df$gvpdlwk, na.rm=T), sd=sd(ess_df$gvpdlwk, na.rm=T))
+
+data.frame(Variables= c("gvslvol","gvhlthc","gvcldcr", "gvpdlwk"),
+          D = round(c(ks_gvslvol$statistic, ks_gvhlthc$statistic, ks_gvcldcr$statistic, ks_gvpdlwk$statistic),2),
+          "P-value" = c(ks_gvslvol$p.value, ks_gvhlthc$p.value, ks_gvcldcr$p.value, ks_gvpdlwk$p.value)
+           )
+
+```
+
+We can also also have multivariate non normality even when all the individual variables are normally distributed (although severe multivariate non normality is probably less likely). There are different multivariate normality tests (i.e., Mardia, Royston, Doornik-Hansen), we are going to use the Henze-Zirkler’s multivariate normality test. For multivariate normality, the test p-value should be greater than 0.05
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+# select the ws items
+ess_df_ws <- ess_df[,c("gvslvol", "gvhlthc", "gvcldcr", "gvpdlwk")]
+# remove NAs
+ess_df_ws_na <- na.omit(ess_df_ws)
+
+mvn_test <- mvn(data = ess_df_ws_na, # our data without NAs
+                mvnTest = c("hz")    # type of normality test to perform
+                )
+
+mvn_test$multivariateNormality
+
+```
+
+To mitigate non-normality we can use scaled ${\chi^2}$ and “robust” standard errors corrections to ML estimation as in Satorra and Bentler (1988; 1994). Adjustments are made to the ${\chi^2}$ (and  ${\chi^2}$ based fit indices) and standard errors based on a weight matrix derived from an estimate of multivariate kurtosis (as said before, the parameter estimates themselves are not altered). 
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+
+model_ws  <-'
+ws =~   gvslvol + # Standard of living for the old
+        gvhlthc + # Health care for the sick
+        gvcldcr + # Child care services for working parents
+        gvpdlwk   # Paid leave from work to care for sick family
+
+'
+
+fit_ws_ml <- cfa(model_ws,          # model formula
+                  data = ess_df,    # data frame
+                  estimator = "ML"  # select the estimator 
+)
+
+fit_ws_mlr <- cfa(model_ws,          # model formula
+                  data = ess_df,     # data frame
+                  estimator = "MLM"  # select the estimator 
+)
+
+summary(fit_ws_mlr,
+        fit.measures=TRUE)
+
+
+```
+
+# Categorical data
+
+1. binary: male/female, dead/alive
+2. nominal with $K>2$: race (black, latino, asian)
+2. ordinal: ses (high, middle, low), likert scales (agree strongly, agree, neutral, disagree, disagree strongly)
+3. counts: number of deadly accidents in a year 
+
+Lavaan can deal only with binary and ordinal endogenous variables. There are two approaches to categorical variables in SEM. Only the three-stage WLS approach is well implemented in Lavaan and includes ‘robust’ variants (the other approach is called full information approach and the estimator is reffered to marginal maximum likelihood). Let's use the social (sbprvpv, sbeqsoc, sbcwkfm) and moral (sblazy, sblwcoa, sblwlka) criticism items to estimate a model with two first-order ordered latent variables. 
+
+Stages of WLS:
+
+1. An observed variable $y$ can be seen as a latent continuous variable $y^*$, in our social criticism example an ordinal variable with K = 5 response categories. The model estimates thresholds using univariate information only. This is part of the mean structure of the model.
+2. Keeping the thresholds fixed, the model estimates the correlations. Only the correlation matrix is used, rather than covariance matrix. In our example with ordinal data, the model estimates polychoric correlations. 
+3. The full SEM model is estimated using weighted least squares. If exogenous covariates are involved (i.e. regression paths), the correlations are adjusted on based on the values of $y^*$. Residual variances of $y^*$ is estimated (called “scale parameters”)
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(data = data.frame(x = c(-3, 3)), aes(x)) +
+  stat_function(fun = dnorm, n = 101, args = list(mean = 0, sd = 1)) + ylab("") + 
+  xlab("latent continuous response y*") +
+  scale_x_continuous(breaks = c(-1.8,-0.8,1.4,2.3)) +
+  scale_y_continuous(breaks = NULL) +
+  geom_vline(xintercept = c(-1.8,-0.8,1.4,2.3), linetype="dashed", color = "black", size=0.3) +
+  annotate(x=-1.8,y=+Inf, label="t1",vjust=2, geom="label") +
+  annotate(x=-0.8,y=+Inf, label="t2",vjust=2, geom="label") +
+  annotate(x=1.4,y=+Inf, label="t3",vjust=2, geom="label") +
+  annotate(x=2.3,y=+Inf, label="t4",vjust=2, geom="label") + 
+  annotate(x=-2.3,y=0.01, label="y=1",vjust=2, geom="text") +
+  annotate(x=-1.3,y=0.01, label="y=2",vjust=2, geom="text") +
+  annotate(x=0.3,y=0.01, label="y=3",vjust=2, geom="text") +
+  annotate(x=1.75,y=0.01, label="y=4",vjust=2, geom="text") +
+  annotate(x=2.65,y=0.01, label="y=5",vjust=2, geom="text") + 
+  theme_classic()
+
+
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+
+model_wc <-'
+## Social criticism ## 
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+##	Moral criticism ##
+wc_moral =~ sblazy + sblwcoa + sblwlka
+'
+
+fit_wc_wlsmv <- cfa(model_wc, 
+                    ordered = c("sbprvpv",
+                                "sbeqsoc",
+                                "sbcwkfm",
+                                "sblazy",
+                                "sblwcoa",
+                                "sblwlka" ),
+                    data = ess_df,
+                    estimator = "WLSMV"
+)
+summary(fit_wc_wlsmv)
+
+
+```
+
+# Missing data
+
+Different types of missingness: 
+
+1. Missing completely at random (MCAR) if the events that lead to any particular data-item being missing are independent both of observable variables and of unobservable parameters of interest, and occur entirely at random. When data are MCAR, the analyses performed on the data are unbiased; however, data are rarely MCAR.
+2. Missing at random (MAR) occurs when the missingness is not random, but where missingness can be fully accounted for by variables on which there is complete information. MAR is an assumption that is impossible to verify statistically, we must rely on its substantive reasonableness.
+3. Missing not at random (MNAR) (also known as nonignorable nonresponse) is data that is neither MAR nor MCAR (i.e. the value of the variable that's missing is related to the reason it's missing).
+
+Three different approaches to missing data (See Brown, Chapter 9)
+
+1. Default behaviour: listwise deletion
+2. Best option: Case-wise (or ‘full information’) maximum likelihood (FIML). Can be employed ONLY when the missing mechanism is MCAR or MAR. A scaled (‘Yuan-Bentler’) test statistic similar to the one used for non-normal continuous data can be computed. 
+3. Second best option: Multiple imputation
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_wc <-'
+## Economic criticism ##
+wc_econo =~ sbstrec + sbbsntx
+## Social criticism ## 
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+##	Moral criticism ##
+wc_moral =~ sblazy + sblwcoa + sblwlka
+'
+
+# listwise
+
+fit_wc_6_listwise <- cfa(model_wc,               # model formula
+                        data = ess_df,           # data frame
+                        missing = "listwise"     # listwise
+  )
+
+summary(fit_wc_6_listwise)
+
+# Full information  maximum likelihood (FIML)
+
+fit_wc_6_fiml <- cfa(model_wc,                # model formula
+                     data = ess_df,           # data frame
+                     missing = "direct"       # alias: "ml" or "fiml"
+  )
+
+summary(fit_wc_6_fiml)
+
+
+# combine both robust standard errors (sandwich) and a scaled test statistic (Satorra Bentler)
+
+fit_wc_6_fiml_mr <- cfa(model_wc,                # model formula
+                     data = ess_df,              # data frame
+                     missing = "direct",         # alias: "ml" or "fiml"
+                     estimator = "MLR"           # Estimator: ML Robust 
+  )
+
+summary(fit_wc_6_fiml_mr, 
+        fit.measures=TRUE)
+
+
+
+```
+FIML has lower standard errors. Why? Because FIML makes more efficient use of the data at hand and preserves statistical power (lower standard errors). This is especially true when we have a substantial amount of missings in our data. Therefore, even if your missing pattern is MCAR, it is a better option than listwise deletion.
+
+*Q:* Why combining FIML with Robust Standard errors leads to an increase in SEs?
+
+## Imputing missing data 
+
+The third option is to perform multiple imputation of the missing data on our data. We can use the r package Amelia to perform multiple imputations. Amelia creates a bootstrapped version of the original data and then imputes the missing values of the original data. This involves imputing m values for each missing cell in your data matrix and creating m "completed" data sets. Across these different data sets, the observed values are the same, but the missing values are filled in with different imputations that reflect our uncertainty about the missing data.
+
+
+```{r, echo=T, message=FALSE, warning = FALSE}
+# select the welfare criticism items
+ess_df_wc <- ess_df %>% select(sbstrec, sbbsntx, sbprvpv, sbeqsoc, sbcwkfm, sblazy, sblwcoa, sblwlka)
+# Amelia explicitly requires a object of data.frame class 
+ess_df_wc <- data.frame(ess_df_wc)
+
+a.out <- amelia(ess_df_wc,  # original dataset with missing
+                m = 15,     # number of m "completed" data sets 
+                seed = 23   # set the seed
+                )
+summary(a.out)
+
+# we can check each "completed" dataset against our original data 
+cbind(ess_df_wc$sbstrec, a.out$imputations$imp1$sbstrec)[c(75:85),]
+# we need to use semTools to fit a lavaan model to multiple imputed data eets
+
+out.mi <- semTools::runMI(
+              model = model_wc,         # model 
+              data = a.out$imputations, # list of imputed data sets 
+              fun = "cfa",              # lavaan function 
+              estimator = "MLR"         # estimator
+              )
+
+
+summary(out.mi,
+        fit.measures=TRUE)
+
+# let's compare the fit of the different models
+model_fit <-  function(lavobject) {
+  vars <- c("chisq", "df", "cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "rmsea.pvalue", "srmr")
+  return(fitmeasures(lavobject)[vars] %>% data.frame() %>% round(2) %>% t())
+}
+
+table_fit <- 
+  list(model_fit(fit_wc_6_listwise), 
+       model_fit(fit_wc_6_fiml), 
+       model_fit(out.mi)) %>% 
+  reduce(rbind)
+ 
+
+rownames(table_fit) <- c("Listwise", "FIML", "Amelia")
+
+table_fit
+```
+
+*Q:* The fit statistics are similar across the models? Why?
+
+Notes:
+
+1. Binary variables: you can specify the nominals option in Amelia function
+2. Ordinal variables: “Users are advised to allow Amelia to impute non-integer values for any missing data, and to use these non-integer values in their analysis. Sometimes this makes sense, and sometimes this defies intuition.”
+3. Variables to include in the imputation model: “When performing multiple imputation, the first step is to identify the variables to include in the imputation model. It is crucial to include at least as much information as will be used in the analysis model. That is, any variable that will be in the analysis model should also be in the imputation model. This includes any transformations or interactions of variables that will appear in the analysis model.”
+
+
