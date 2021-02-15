@@ -79,5 +79,6 @@ belgium <- dataset_to_clean %>% filter(cntry=="BE") %>% select(gvslvol,
                                                     smdfslv)
 
 
+
 write_sav(belgium, "ESS4_belgium.sav")
 
