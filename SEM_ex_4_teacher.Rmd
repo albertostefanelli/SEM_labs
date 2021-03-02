@@ -63,6 +63,7 @@ options(width = 300, scipen = 9999)
 
 1. Ex.1 -- Non-normal continuous data
 2. Ex.2 -- Categorical data multi-group 
+
 # Data 
 
 The data set used throughout is the European Social Survey ESS4-2008 Edition 4.5 was released on 1 December 2018. We will restrict the analysis to the Belgian case.  Each line in the data set represents a Belgian respondent. The full dataset an documentation can be found on the [ESS website](https://www.europeansocialsurvey.org/data/download.html?r=4)

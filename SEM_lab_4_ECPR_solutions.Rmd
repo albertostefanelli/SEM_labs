@@ -1,0 +1,689 @@
+---
+title:  Structural Equation Modeling | Lab Session 4
+author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
+# date: "`r Sys.Date()`"
+# fontsize: 10pt 
+bibliography: lib.bib
+link-citations: yes
+output:
+  #pdf_document:
+  rmdformats::readthedown:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: false
+    highlight: tango
+    use_bookdown: true
+    fig_width: 12
+    fig_height: 8
+# header-includes
+---
+<style type="text/css">
+#content {
+    max-width: 1500px !important;
+/*    !margin-left: 300px !important;
+*/
+}
+#table-of-contents {
+    width: 300px !important;
+}
+
+#postamble {
+  font-size: 10px;
+}
+
+pre{
+  background-color: #FFFFFF;
+    font-size: 12px;
+}
+pre:not([class]) {
+  background-color: #D8D8D8;
+    color: black;
+}
+
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(tidy=FALSE, 
+  fig.show = 'hold', 
+  fig.align = "center", 
+  warning = FALSE, 
+  message = FALSE, 
+  comment = '')
+options(width = 300, scipen = 9999)
+
+# last dev version is needed for rmdformats.
+# more info https://github.com/juba/rmdformats/issues/92 
+# devtools::install_github("juba/rmdformats")
+
+```
+
+
+# What we are going to cover 
+
+1. MIMIC models
+2. Ex.1 -- MIMIC
+3. Mediation Analysis
+4. Ex.2 -- Mediation Analysis
+
+# Data 
+
+The data set used throughout is the European Social Survey ESS4-2008 Edition 4.5 was released on 1 December 2018. We will restrict the analysis to the Belgian case. Each line in the data set represents a Belgian respondent. The full dataset an documentation can be found on the [ESS website](https://www.europeansocialsurvey.org/data/download.html?r=4)
+
+Codebook:
+
+- **gvslvol** Standard of living for the old, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvslvue** Standard of living for the unemployed, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvhlthc** Health care for the sick, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvcldcr** Child care services for working parents, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvjbevn** Job for everyone, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvpdlwk** Paid leave from work to care for sick family, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+
+- **sbstrec** Social benefits/services place too great strain on economy (1 Agree strongly - 5 Disagree strongly)
+- **sbbsntx** Social benefits/services cost businesses too much in taxes/charges (1 Agree strongly - 5 Disagree strongly)
+- **sbprvpv** Social benefits/services prevent widespread poverty (1 Agree strongly - 5 Disagree strongly)
+- **sbeqsoc** Social benefits/services lead to a more equal society (1 Agree strongly - 5 Disagree strongly)
+- **sbcwkfm** Social benefits/services make it easier to combine work and family (1 Agree strongly - 5 Disagree strongly)
+- **sblazy**  Social benefits/services make people lazy (1 Agree strongly - 5 Disagree strongly)
+- **sblwcoa** Social benefits/services make people less willing care for one another (1 Agree strongly - 5 Disagree strongly)
+- **sblwlka** Social benefits/services make people less willing look after themselves/family (1 Agree strongly - 5 Disagree strongly)
+
+In addition, we will use some other variables 
+
+- **agea** Respondent's age
+- **eduyrs** Years of full-time education completed
+- **gndr** Gender (1 Male, 2 Female)
+- **hinctnta** Household's total net income, all sources (Deciles of the actual household income range in Belgium)
+
+- **gincdif** Government should reduce differences in income levels  (1 Agree strongly - 5 Disagree strongly)
+- **dfincac** Large differences in income acceptable to reward talents and efforts  (1 Agree strongly - 5 Disagree strongly)
+- **smdfslv** For fair society, differences in standard of living should be small  (1 Agree strongly - 5 Disagree strongly)
+
+
+# Environment preparation 
+
+First, let's load the necessary packages to load, manipulate, visualize and analyse the data. 
+
+```{r, echo=T, message=FALSE, warning=FALSE,cache=F}
+# Uncomment this once if you need to install the packages on your system 
+
+### DATA MANIPULATION ###
+# install.packages("haven")                 # data import from spss
+# install.packages("dplyr")                 # data manipulation
+# install.packages("psych")                 # descriptives
+# install.packages("stringr")               # string manipulation
+
+# ### MODELING ###
+# install.packages("lavaan")                # SEM modelling
+
+# ### VISUALIZATION ###
+# install.packages("tidySEM")               # plotting SEM models
+
+# Load the packages 
+
+### DATA MANIPULATION ###
+library("haven")        
+library("dplyr")      
+library("psych")
+library('stringr')
+
+### MODELING ###
+library("lavaan")       
+
+### VISUALIZATION ###
+library("tidySEM")
+
+```
+
+# Data exploration
+
+It is a good practice to check that everything is in order and make sense of the data that we are going to analyse. Since we addedd few variables to the dataset, we will check that eveything is in order. 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+
+
+ess_df_selected <- ess_df %>% select(
+                  ## Egalitarianism ##
+                  gincdif,
+                  dfincac,
+                  smdfslv,
+                  ## Demographics ##
+                  agea, 
+                  eduyrs,
+                  gndr,
+                  hinctnta
+
+
+)
+
+descriptive_ess <- as.data.frame(psych::describe(ess_df_selected))
+
+descriptive_ess <- dplyr::select(descriptive_ess, 
+  n,
+  mean,
+  sd,
+  median,
+  min,
+  max,
+  skew,
+  kurtosis)
+
+descriptive_ess
+
+```
+
+**Q:** Is everything ok ?
+
+# MIMIC model
+
+In the previous lab, we tested the validity of our measurement model. Now that we are more confident that our measurement model is valid, we can apply our theoretical knowledge and test some simple hypotheses. We hypothesise that respondents' structural characteristics influence their support of welfare state. These type of models are called MIMIC models and stands for “Multiple Indicators, Multiple Causes”. Typically, the measurement model is developed first (as we did in the first lab), after which covariates are added.
+
+Simple example: 
+
+- one latent factor measured by 3 indicators ("Welfare Support") 
+- influenced by 2 causes (gender and education)
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_ws_mimic <-'welf_supp =~ gvslvol + gvslvue + gvhlthc
+welf_supp ~ gndr + eduyrs
+'
+
+fit_ws_mimic <- cfa(model_ws_mimic,   # model formula
+                   data = ess_df      # data frame
+  )
+
+summary(fit_ws_mimic)
+
+```
+
+Nothing is significant. Neither gender nor education seem to significantly impact individual support for the welfare state.
+
+# Ex.1 - MIMIC model
+
+1. Fit the a measurement model with both welfare support and egalitarianism and review the fit statistics. Also review the parameter estimates. How close are they to the population values?
+2. Predict welfare support by adding the gender covariate and assess the changes in fit statistics and parameter estimates.
+3. Add in succession age, income, and education and again see if fit statistics or parameter estimates change.
+4. Is there a trend for the fit statistics to change (improve or deteriorate) when including covariates?
+5. Calculate the degrees of freedom for each of these models manually. Explain the changes in degrees of freedom. **(OPTIONAL)**
+6. Create an R function for the  degrees of freedom calculations. **(OPTIONAL)**
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_ws_eg <- '
+## Welfare Support Factor ##
+welf_supp =~ gvslvol + gvslvue + gvhlthc
+
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+'
+
+fit_ws_eg <- cfa(model_ws_eg,   # model formula
+                 data = ess_df  # data frame
+  )
+
+summary(fit_ws_eg)
+
+model_ws_eg_g <- '
+## Welfare Support Factor ##
+welf_supp =~ gvslvol + gvslvue + gvhlthc
+
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+
+welf_supp ~ gndr
+'
+
+fit_ws_eg_g <- cfa(model_ws_eg_g, # model formula
+                  data = ess_df  # data frame
+  )
+graph_sem(fit_ws_eg_g)
+
+model_ws_eg_ga <- '
+## Welfare Support Factor ##
+welf_supp =~ gvslvol + gvslvue + gvhlthc
+
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+
+welf_supp ~ gndr + agea
+'
+
+fit_ws_eg_ga <- cfa(model_ws_eg_ga, # model formula
+                    data = ess_df   # data frame
+  )
+
+model_ws_eg_gai <- '
+## Welfare Support Factor ##
+welf_supp =~ gvslvol + gvslvue + gvhlthc
+
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+
+welf_supp ~ gndr + agea + hinctnta
+'
+
+fit_ws_eg_gai <- cfa(model_ws_eg_gai, # model formula
+                     data = ess_df   # data frame
+  )
+
+model_ws_eg_gaie <- '
+## Welfare Support Factor ##
+welf_supp =~ gvslvol + gvslvue + gvhlthc
+
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+
+welf_supp ~ gndr + agea + hinctnta + eduyrs
+'
+
+fit_ws_eg_gaie <- cfa(model_ws_eg_gaie, # model formula
+                      data = ess_df     # data frame
+  )
+
+
+
+fitm_model_ws_eg <-  fitMeasures(fit_ws_eg, c("logl",
+                                                "AIC", 
+                                                "BIC", 
+                                                "chisq",
+                                                "df",
+                                                "pvalue",
+                                                "cfi",
+                                                "tli",
+                                                "rmsea"), 
+                                                output = "matrix")
+
+fitm_model_ws_eg_g <- fitMeasures(fit_ws_eg_g, c("logl",
+                                                   "AIC", 
+                                                   "BIC", 
+                                                   "chisq",
+                                                   "df",
+                                                   "pvalue",
+                                                   "cfi",
+                                                   "tli",
+                                                   "rmsea"), 
+                                                   output = "matrix")
+
+fitm_model_ws_eg_ga <- fitMeasures(fit_ws_eg_ga, c("logl",
+                                                  "AIC", 
+                                                  "BIC", 
+                                                  "chisq",
+                                                  "df",
+                                                  "pvalue",
+                                                  "cfi",
+                                                  "tli",
+                                                  "rmsea"), 
+                                                  output = "matrix")
+
+fitm_model_ws_eg_gai <- fitMeasures(fit_ws_eg_gai, c("logl",
+                                                       "AIC", 
+                                                       "BIC", 
+                                                       "chisq",
+                                                       "df",
+                                                       "pvalue",
+                                                       "cfi",
+                                                       "tli",
+                                                       "rmsea"), 
+                                                       output = "matrix")
+
+fitm_model_ws_eg_gaie <- fitMeasures(fit_ws_eg_gaie, c("logl",
+                                                         "AIC", 
+                                                         "BIC", 
+                                                         "chisq",
+                                                         "df",
+                                                         "pvalue",
+                                                         "cfi",
+                                                         "tli",
+                                                         "rmsea"), 
+                                                         output = "matrix")
+
+data.frame(Fit=rownames(fitm_model_ws_eg),
+           "Measurement" = round(fitm_model_ws_eg[,1], 2),
+           "plus_gender" = round(fitm_model_ws_eg_g[,1], 2),
+           "plus_age" = round(fitm_model_ws_eg_ga[,1], 2),
+           "plus_income" = round(fitm_model_ws_eg_gai[,1], 2),
+           "plus_education" = round(fitm_model_ws_eg_gaie[,1], 2)
+
+  
+)
+
+```
+
+
+Degrees of freedom calculation: **(OPTIONAL)**
+
+1. pieces of information (observed variables) = $p(p+1)/2=21$
+2. measurement part = n factor loadings + n residual variances. 
+3. structural part = n regressions + n residual factor variance.
+4. exogenous variables = n variances + n covariances.
+5. df = pieces of information - (measurement part + structural part + exogenous variables). 
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+# let's build a function to calculate the df for our models
+
+degres_of_freedom <- function(obs_var = obs_var,        # n obs. variables 
+                              loads = loads,            # n factors loadings
+                              regression = regression,  # n regression
+                              latent_var = latent_var,  # n latent variables
+                              covariance_latent = TRUE, # covariance latent vars
+                              exogenous = exogenous){   # n exogenous 
+
+# next function returns n combination of 2 or more variables 
+# we use it to calculate the n covariance of the exogenous variables
+comb = function(n, x) {
+  if(n == 0){return(0)} # if we have no exogenous variables return 0
+  if(n == 1){return(0)} # if we have 1 exogenous variable return 0
+  else{
+  factorial(n) / factorial(n-x) / factorial(x)}
+}
+
+# 1. pieces of information (observed variables)
+info <- obs_var * (obs_var + 1) / 2 
+#2. measurement part = n factor loadings + n residual variances. 
+measurement <- (loads) + obs_var
+#3. structural part = n regressions + n residual factor variance.
+structural <- ifelse(regression>0, 0, regression) + latent_var
+# 4. exogenous variables = n variances + n covariances.
+# first, let's calculate the covariances 
+cov <- NA
+# lavaan removes by default the LV covariance when you include a regression
+# this code takes into account lavaan behaviour
+if(covariance_latent == TRUE){ 
+cov<-comb(latent_var, 2)}else{cov <- 0}
+# second, let's get the n variances and n covariances for our exogenous vars.
+exogenous_var <- exogenous + comb(exogenous, 2)
+# finally, let's calculate the df
+df = info - (measurement + structural + exogenous_var+ cov)
+return(df)
+} 
+
+df_model_ws_eg <- degres_of_freedom(obs_var = 6,
+                  loads = 4,
+                  regression = 0,
+                  latent_var = 2,
+                  covariance_latent = TRUE,
+                  exogenous = 0)
+
+
+df_model_ws_eg_g <- degres_of_freedom(obs_var = 7,
+                  loads = 4,
+                  regression = 1,
+                  latent_var = 2,
+                  covariance_latent = FALSE,
+                  exogenous = 1)
+
+df_model_ws_eg_ga <- degres_of_freedom(obs_var = 8,
+                  loads = 4,
+                  regression = 2,
+                  latent_var = 2,
+                  covariance_latent = FALSE,
+                  exogenous = 2)
+
+df_model_ws_eg_gai <- degres_of_freedom(obs_var = 9,
+                  loads = 4,
+                  regression = 3,
+                  latent_var = 2,
+                  covariance_latent = FALSE,
+                  exogenous = 3)
+
+
+df_model_ws_eg_gaie <- degres_of_freedom(obs_var = 10,
+                  loads = 4,
+                  regression = 4,
+                  latent_var = 2,
+                  covariance_latent = FALSE,
+                  exogenous = 4)
+
+
+
+data.frame(Models = c("ws_eg", "ws_eg_g", "ws_eg_ga", "ws_eg_gai", "ws_eg_gaie"),
+           df=c(df_model_ws_eg,
+                df_model_ws_eg_g,
+                df_model_ws_eg_ga,
+                df_model_ws_eg_gai,
+                df_model_ws_eg_gaie))
+
+
+```
+
+
+# Mediation analysis 
+
+Mediation analysis (or path analysis) tests whether the relationship between two variables is explained by a third intermediate variable. It can have a casual interpretation such as the extent to which a variable (mediator) participates in the transmittance of change from a cause to its effect. In empirical applications, you will see both interpretations used. However, many equivalent models can fit the data so be careful when using mediation analysis. If you want to know more, check [Sacha Epskamp presentation](http://sachaepskamp.com/files/SEM22019/SEM2_2019_Week2_slides.pdf) on causality and equivalent models.
+
+Consider a classical mediation setup with three variables: 
+
+- Y is the dependent variable (Welfare support) 
+- X is the predictor (Income)
+- M is a mediator (Egalitarianism)
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+edg <- data.frame(from = c("X", "M", "X"),
+                  to = c("M", "Y", "Y"),
+                  label= c("a","b","c'")
+)
+
+nod <- data.frame(name = c("X","M", "Y"),
+                    shape = c("rect", "rect","rect"),
+                    label= c("Income","Egalitarianism","Welfare support"),
+                    linetype = c(1,1,1),
+                    # colour = c("blue", "blue"),
+                    # fill = c("blue", "blue"),
+                    # size = c(2, 2),
+                     alpha = .5
+                  )
+
+graph_sem(edges = edg, nodes = nod, layout = get_layout("", "M", "",
+                                                        "X","","Y",
+                                                        rows = 2),
+           angle = 170
+          )
+
+```
+
+This results in different paths
+
+1. a path: Test whether X and M are significantly associated 
+3. b path: Test whether M and Y are significantly associated 
+1. c path: Test whether X and Y are significantly associated (**Direct Effect**)
+4. c' path: Test whether Y from X are significantly associated after controlling for M (**Indirect Effect**). This is usually called "the amount of mediation".
+
+Note that the **Total Effect** is equal to **Direct Effect** + **Indirect Effect** or $c= ab +c'$
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_mediation <- '
+## Welfare Support Factor ##
+welf_supp =~ gvslvol + gvslvue + gvhlthc
+
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+
+## Direct effect ##
+welf_supp ~ c*hinctnta
+
+## Mediator ##
+egual ~ a*hinctnta
+welf_supp ~ b*egual
+
+## Indirect effect (a*b) ##
+ab := a*b
+## Total effect ##
+total := c + (a*b)
+'
+
+fit_mediation <- cfa(model_mediation, # model formula
+                     data = ess_df    # data frame
+  )
+
+summary(fit_mediation)
+
+```
+
+The indirect effect is significant and negative. We can say that egalitarianism mediates the effect between income and welfare support. However, the total effect is still not significant. 
+
+Let's plot our model to get better grasp of what it is happening. 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+# let's organize our plot on 4 rows 
+# this help our readers by having a more comprehensible plot
+
+lay <- get_layout(
+"gincdif", "dfincac", "smdfslv", "", 
+"", "egual", "", "", 
+"hinctnta", "", "welf_supp", "", 
+"",  "gvslvol", "gvslvue", "gvhlthc",
+rows = 4)
+
+plot_mediation <- graph_sem(model = fit_mediation,   # model fit
+          layout = lay,        # layout
+          angle = 170          # adjust the arrows 
+          #label = "est_std"   # get standardized results (not rounded)
+          )
+
+plot_mediation
+```
+
+**Q:** The path between welfare support and income (direct effect) is not significant. Nor the total effect. What does that mean ?
+
+Zhao, Lynch and Chen [-@zhao2010reconsidering] classify mediation effects as following:
+
+- Complementary mediation: Mediated effect (a x b) and direct effect (c) both exist and point at the same direction.
+- Competitive mediation: Mediated effect (a x b) and direct effect (c) both exist and point in opposite directions.
+- Indirect-only mediation: Mediated effect (a x b) exists, but no direct effect (c).
+- Direct-only non-mediation: Direct effect (c) exists, but no indirect effect.
+- No-effect non-mediation: Nether direct effect (c), nor indirect effect exists.
+
+
+#  Ex.2 -- Mediation Analysis
+
+1. Fit a model where egalitarianism (gincdif, dfincac, smdfslv) mediates the relationship between age (agea), education (eduyrs), gender (gndr), income (hinctnta) and welfare support (gvslvol, gvslvue, gvhlthc)
+2. Assess if the model fits the data well
+3. Inspect the regression parameters and the R-squared values of the latent variables.
+4. Manually calculate the indirect effect of age via egalitarianism $a \times b$ and its standard error ($\sigma_{a \times b}$) using Sobel’s formula:
+    - Indirect effect = $a \times b$.
+    - $\sigma_{a \times b} = \sqrt{b^2 \times \sigma_{a}^2 + a^2 \times \sigma_{b}^2}$.
+5. Manually calculate the total effect of age $c' + (a \times b)$ on welfare support. **(OPTIONAL)**
+6. Ask lavaan to calculate these indirect and total effects. Compare to your own solution 
+7. Interpret the results. Does egalitarianism mediates age? Can you interpret this result causally ? 
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+model_mediation <- '
+## Welfare Support Factor ##
+welf_supp =~ gvslvol + gvslvue + gvhlthc
+
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+
+## Direct effect(s) ##
+welf_supp ~ c * agea + c1 * eduyrs + c2 * hinctnta + c3 * gndr
+
+## Mediator ##
+# Path A
+egual ~ a * agea
+egual ~ a1 * eduyrs
+egual ~ a2 * hinctnta
+egual ~ a3 * gndr
+# Path B
+welf_supp ~ b * egual
+
+## Indirect effect (a * b) ##
+ab_age := a * b
+a1b_edu := a1 * b
+a2b_inco := a2 * b
+a3b_gndr := a3 * b
+
+## Total effect ##
+total_age := c + (a * b)
+total1_edu := c1 + (a1 * b)
+total2_inco := c2 + (a2 * b)
+total3_gndr := c3 + (a3 * b)
+
+'
+
+fit_mediation <- cfa(model_mediation, # model formula
+                     data = ess_df    # data frame
+  )
+
+# Fit indices
+fitm_model_mediation<- fitMeasures(fit_mediation, c("logl",
+                                                  "AIC", 
+                                                  "BIC", 
+                                                  "chisq",
+                                                  "df",
+                                                  "pvalue",
+                                                  "cfi",
+                                                  "tli",
+                                                  "rmsea"), 
+                                                  output = "matrix")
+
+fitm_model_mediation
+```
+The model fits the data fairly well. Let's now move to regression estimates and $R^2$. 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+tidy_results <- table_results(fit_mediation,             
+  columns = c("label", 
+              "est_sig"),
+  digits = 2,
+)
+
+tidy_results %>% filter(str_detect(label, 
+                                   "welf_supp.ON|egual.ON") # | means OR
+                        ) 
+
+r2 <- round(inspect(fit_mediation,"r2"), 3)
+r2
+```
+
+Remember that the $R^2$ is calculated as 1 minus the ratio of residual variance (appearing in the parameter estimates, although it might be a fixed value) to the model-implied total variance of that variable. In other words, the $R^2$ is the proportion of variance of the latent response that was explained by the predictors.
+
+Next, let's calculate the direct and indirect effects manually 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+## Coefficients ## 
+a <- inspect(fit_mediation,"est")$beta["egual", "agea"]
+b <- inspect(fit_mediation,"est")$beta["welf_supp", "egual"]
+## Standard Errors ## 
+sigma_a <- inspect(fit_mediation,"se")$beta["egual", "agea"]
+sigma_b <- inspect(fit_mediation,"se")$beta["welf_supp", "egual"]
+## Manual calculation of indirect effect a x b ## 
+a * b
+## Manual calculation of the sigma a x b ## 
+sqrt(a^2 * sigma_b^2 + b^2 * sigma_a^2)
+## Manual calculation of the total effect (a x b) + c' ## (OPTIONAL)
+a * b + inspect(fit_mediation,"est")$beta["welf_supp", "agea"]
+
+```
+
+Let's use tidy SEM to extract the direct and indirect effects calculated by lavaan 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+
+tidy_results <- table_results(fit_mediation,             
+  columns = c("label", 
+              "est_sig", # beta 
+              "se"       # sigma
+),
+  digits = 2,
+)
+
+
+tidy_results %>% filter(str_detect(label, 
+                                   "ab_age|total_age") # | means OR
+                        ) 
+
+
+```
+Unsurprisingly, they are the same as the one that we calculated manually.
+
+# References 
