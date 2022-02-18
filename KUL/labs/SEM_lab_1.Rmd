@@ -3,7 +3,7 @@ title:  Structural Equation Modeling | Lab Session 1
 author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
 # date: "`r Sys.Date()`"
 # fontsize: 10pt 
-bibliography: lib.bib
+bibliography: ../lib.bib
 link-citations: yes
 output:
   #pdf_document:
@@ -164,7 +164,7 @@ library("tidySEM")
 It is a good practice to check that everything is in order and make sense of the data that we are going to analyze. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
-ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/data/ESS4_belgium.sav")
 
 head(ess_df, 20)  # first 20 rows of the dataset
 nrow(ess_df)      # number of subjects 
@@ -564,7 +564,7 @@ fit_wc <- cfa(model_wc,              # model formula
              data = ess_df_selected  # data frame
   )
 
-summary(fit_wc)
+summary(fit_wc, standardized=TRUE)
 
 
 ```
@@ -591,7 +591,7 @@ plot_wc
 ```
 
 
-With `tidySEM`, you can fully customize your plot. For instance, it is possible to highlighting a specific model element, such as the low factor loading for sbprvpv on wc_socia
+With `tidySEM`, you can fully customize your plot. For instance, it is possible to highlighting a specific model element, such as the low factor loading for sbcwkfm on wc_socia
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
@@ -600,10 +600,11 @@ graph_data <- prepare_graph(fit_wc)
 edges(graph_data) <- graph_data %>% 
   edges() %>%
   mutate(colour = "black") %>%
-  mutate(colour = replace(colour, from == "wc_socia" & to == "sbprvpv", "red"))
+  mutate(colour = replace(colour, from == "wc_socia" & to == "sbcwkfm", "red"))
 
 plot(graph_data,
      layout = lay,        # layout 
+     #label = "est_std",   # get standardized results (not rounded)
      angle = 170          # adjust the arrows 
   )
 

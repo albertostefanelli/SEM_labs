@@ -3,7 +3,7 @@ title:  Structural Equation Modeling | Lab Session 3
 author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
 # date: "`r Sys.Date()`"
 # fontsize: 10pt 
-bibliography: lib.bib
+bibliography: ../lib.bib
 link-citations: yes
 output:
   #pdf_document:
@@ -136,22 +136,24 @@ library("purrr")
 
 # Measurament Equivalence 
 
+In a nutshell: 
+
 - Measurement Equivalence is achieved if a measurement instrument produces equivalent results, regardless of some unrelated properties of the test subjects.
 - The absence of measurement equivalence would imply some degree of distortion of the results (“bias”). For instance, an IQ test that favors males by including “gender-biased test items”
 - What is the effect of such a bias? Would we draw incorrect conclusions?
 - Can we detect whether such bias is present in our data?
 
 
-Pros:
+**Pros:**
 
-– Simultaneously testing a CFA model in multiple groups 
-– Possible to test equality of each parameter
+- Simultaneously testing a CFA model in multiple groups 
+- Possible to test equality of each parameter
 
-Cons:
+**Cons:**
 
-– Requires a larger sample size than the MIMIC approach 
-– Requires more programming
-– Not very elegant for comparing many groups
+- Requires a larger sample size than the MIMIC approach 
+- Requires more programming
+- Not very elegant for comparing many groups
 
 There are different types of measurement equivalence:
 
@@ -189,7 +191,7 @@ In this lab, we are going to test whether welfare support is measured equivalent
 ## Configural invariance
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
-ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/data/ESS4_belgium.sav")
 
 # lavaan requires the grouping variable to be a factor 
 # gender is coded as 1 Male, 2 Female
@@ -205,7 +207,7 @@ fit_configural <- cfa(model_ws,
                       group = "gndr")
 
 
-summary(fit_configural)
+summary(fit_configural, standardized=TRUE)
 
 ```
 
@@ -213,7 +215,7 @@ All parameters are different across groups
 
 ## Metric Invariance
 
-For metric invariance we are going to constrain factor loadings equal across groups. This shows that the construct has the same meaning across groups. Metric invariance is necessary for correlations and regressions. 
+For metric invariance we are going to constrain **factor loadings** equal across groups. This shows that the construct has the same meaning across groups. Metric invariance is necessary for correlations and regressions. 
 
 Metric non-invariance:
 
@@ -232,7 +234,7 @@ fit_metric <- cfa(model_ws,
                 )
 
 
-summary(fit_metric)
+summary(fit_metric, standardized=TRUE)
 
 ```
 
@@ -240,7 +242,7 @@ summary(fit_metric)
 
 ## Scalar Invariance
 
-Scalar invariance requires item intercepts and factor loadings equal across groups. This is important for assessing mean difference of the latent variable across groups. 
+Scalar invariance requires item **intercepts** and factor loadings equal across groups. This is important for assessing mean difference of the latent variable across groups. 
 
 Scalar non-invariance:
 
@@ -257,29 +259,32 @@ fit_scalar <- cfa(model_ws,
                 )
 
 
-summary(fit_scalar)
+summary(fit_scalar, standardized=TRUE)
 
 ```
+
 ## Strict invariance
 
-For achieving strict invariance we need to constrain item residual variance,factor loadings, and intercepts equal across groups. If we want to use sum scores of observed items, our construct should reach strict invariance. This is because observed variance is a combination of true score variance and residual variance. 
+For achieving strict invariance we need to constrain item **residual variance**, factor loadings, and intercepts equal across groups. If we want to use sum scores of observed items, our construct should reach strict invariance. This is because observed variance is a combination of true score variance and residual variance. 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, echo=T, message=FALSE, warning=FALSE}
 
 fit_strict <- cfa(model_ws, 
                       data = ess_df,
                       group = "gndr",
-                      group.equal = c("intercepts",
+                      group.equal = c("loadings",
+                                      "intercepts",
                                       "residuals")
                 )
 
 
-summary(fit_strict)
+summary(fit_strict, standardized=TRUE)
 
 ```
+
 ## Structural invariance
 
-For achieving strict invariance we need to constrain factor variances, factor covariances (if more than one latent factors), item residual variance, factor loadings, and intercepts equal across groups. Additionally, in multiple group SEM analysis we should also constrain regression path coefficients. 
+For achieving strict invariance we need to constrain **factor variances**, **factor covariances** (if more than one latent factors), item residual variance, factor loadings, and intercepts equal across groups. Additionally, in multiple group SEM analysis we should also constrain regression path coefficients. 
 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
@@ -295,7 +300,7 @@ fit_structural <- cfa(model_ws,
                 )
 
 
-summary(fit_structural)
+summary(fit_structural, standardized=TRUE)
 
 ```
 ## Evaluating measurement invariance
@@ -449,7 +454,7 @@ fit_mediation_mg <- cfa(model_mediation_mg,       # model formula
 
   )
 
-summary(fit_mediation_mg)
+summary(fit_mediation_mg, standardized=TRUE)
 
 ```
 
@@ -485,7 +490,7 @@ fit_mediation_mg_cons <- cfa(model_mediation_mg_cons,       # model formula
 
   )
 
-summary(fit_mediation_mg_cons)
+summary(fit_mediation_mg_cons, standardized=TRUE)
 
 ```
 Next, we compare the two models using the $\chi^2$ difference test:
@@ -500,4 +505,5 @@ On the contrary, a significant P-value would imply that some paths vary while ot
 
 This exercise of relaxing and imposing constraints is potentially very exploratory. Refrain from constraining and relaxing all paths and then choosing the most parsimonious model. Instead, choosing which paths to constrain should be motivated by solid theoretical expectations and your research questions. 
 
+# References 
 

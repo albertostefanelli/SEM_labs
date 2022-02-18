@@ -3,7 +3,7 @@ title:  Structural Equation Modeling | Lab Session 4
 author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
 # date: "`r Sys.Date()`"
 # fontsize: 10pt 
-bibliography: lib.bib
+bibliography: ../lib.bib
 link-citations: yes
 output:
   #pdf_document:
@@ -115,8 +115,15 @@ First, let's load the necessary packages to load, manipulate, visualize and anal
 
 ### MODELING ###
 # install.packages("lavaan")                # SEM modelling
+
+#### FOR MVN we need install.packages("gsl"). 
+#### ON mac with homebrewed packaged:
+#### CFLAGS="-I/opt/homebrew/Cellar/gsl/2.7.1/include" LDFLAGS="-L/opt/homebrew/Cellar/gsl/2.7.1/lib -lgsl -lgslcblas" R
+#### install.packages("gsl")
+
 # install.packages("MVN")                   # tests for multivariate normality
 # install.packages("Amelia")                # performing multiple imputation
+# install.packages("semTools")              # fit a model to multiple imputed data set
 
 ### VISUALIZATION ###
 # install.packages("tidySEM")               # plotting SEM models
@@ -136,6 +143,7 @@ library("purrr")
 library("lavaan")       
 library("MVN")
 library("Amelia")
+#library("semTools")                      # loaded later for compatibility issues
 
 ### VISUALIZATION ###
 library("tidySEM")
@@ -147,15 +155,15 @@ library("patchwork")
 
 # Non-normal, continuous data
 
-Special data analytic techniques for non-normal continuous variables should be used if any of the continuous variables in the model are non-normal. maximum likelihood (ML) with non normal continuous variables results in biased standard errors and model fit deterioration. Practically, this means that that chi-square will be erroneously too large and standard errors are too small increasing the probability of TYpe-1 errors. The parameter estimates (e.g., loadings, regression coefficients) are largely unaffected (Finch, West, & MacKinnon, 1997).
+Special data analytic techniques for non-normal continuous variables should be used if any of the continuous variables in the model are non-normal. maximum likelihood (ML) with non normal continuous variables results in biased standard errors and model fit deterioration. Practically, this means that that chi-square will be erroneously too large and standard errors are too small increasing the probability of Type-1 errors. The parameter estimates (e.g., loadings, regression coefficients) are largely unaffected [@doi:10.1080/10705519709540063].
 
 ## Detecting non-normality 
 
-Unadjusted ML analysis approach most commonly employed for SEM assumes multivariate normality. One first step to assess multivariate normality consist in checking if the univariate distributions are normal. If the univariate distributions are non-normal, then the multivariate distribution will be non normal. We can plot the univariate distribution of our variables and perform a Kolmogorov-Smirnov test. 
+Unadjusted ML analysis approach most commonly employed for SEM assumes multivariate normality. One first step to assess multivariate normality consist in checking if the univariate distributions are normal. If the univariate distributions are non-normal, then the multivariate distribution will be non normal. We can plot the univariate distribution of our variables and perform a Kolmogorov-Smirnov (KS) test. 
 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
-ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/data/ESS4_belgium.sav")
 
 # We are going to measure welfare support using 4 items: gvslvol gvhlthc gvcldcr gvpdlwk
 # First let's visually inspect our variables 
@@ -302,7 +310,7 @@ fit_wc_wlsmv <- cfa(model_wc,
                     data = ess_df,
                     estimator = "WLSMV"
 )
-summary(fit_wc_wlsmv)
+summary(fit_wc_wlsmv, standardized=TRUE)
 
 
 ```
@@ -340,7 +348,7 @@ fit_wc_6_listwise <- cfa(model_wc,               # model formula
                         missing = "listwise"     # listwise
   )
 
-summary(fit_wc_6_listwise)
+summary(fit_wc_6_listwise, standardized=TRUE)
 
 # Full information  maximum likelihood (FIML)
 
@@ -349,7 +357,7 @@ fit_wc_6_fiml <- cfa(model_wc,                # model formula
                      missing = "direct"       # alias: "ml" or "fiml"
   )
 
-summary(fit_wc_6_fiml)
+summary(fit_wc_6_fiml, standardized=TRUE)
 
 
 # combine both robust standard errors (sandwich) and a scaled test statistic (Satorra Bentler)
@@ -361,7 +369,8 @@ fit_wc_6_fiml_mr <- cfa(model_wc,                # model formula
   )
 
 summary(fit_wc_6_fiml_mr, 
-        fit.measures=TRUE)
+        fit.measures=TRUE, 
+        standardized=TRUE)
 
 
 
@@ -389,7 +398,7 @@ summary(a.out)
 
 # we can check each "completed" dataset against our original data 
 cbind(ess_df_wc$sbstrec, a.out$imputations$imp1$sbstrec)[c(75:85),]
-# we need to use semTools to fit a lavaan model to multiple imputed data eets
+# we need to use semTools to fit a lavaan model to multiple imputed data sets
 
 out.mi <- semTools::runMI(
               model = model_wc,         # model 
@@ -400,7 +409,8 @@ out.mi <- semTools::runMI(
 
 
 summary(out.mi,
-        fit.measures=TRUE)
+        fit.measures=TRUE,
+        standardized=TRUE)
 
 # let's compare the fit of the different models
 model_fit <-  function(lavobject) {
@@ -427,5 +437,7 @@ Notes:
 1. Binary variables: you can specify the nominals option in Amelia function
 2. Ordinal variables: “Users are advised to allow Amelia to impute non-integer values for any missing data, and to use these non-integer values in their analysis. Sometimes this makes sense, and sometimes this defies intuition.”
 3. Variables to include in the imputation model: “When performing multiple imputation, the first step is to identify the variables to include in the imputation model. It is crucial to include at least as much information as will be used in the analysis model. That is, any variable that will be in the analysis model should also be in the imputation model. This includes any transformations or interactions of variables that will appear in the analysis model.”
+
+# References 
 
 

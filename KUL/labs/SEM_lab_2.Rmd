@@ -3,7 +3,7 @@ title:  Structural Equation Modeling | Lab Session 2
 author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
 # date: "`r Sys.Date()`"
 # fontsize: 10pt 
-bibliography: lib.bib
+bibliography: ../lib.bib
 link-citations: yes
 output:
   #pdf_document:
@@ -138,7 +138,7 @@ library("tidySEM")
 It is a good practice to check that everything is in order and make sense of the data that we are going to analyse. Since we addedd few variables to the dataset, we will check that eveything is in order. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
-ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/data/ESS4_belgium.sav")
 
 
 ess_df_selected <- ess_df %>% select(
@@ -192,7 +192,7 @@ fit_ws_mimic <- cfa(model_ws_mimic, # model formula
                    data=ess_df      # data frame
   )
 
-summary(fit_ws_mimic)
+summary(fit_ws_mimic, standardized=TRUE)
 
 ```
 
@@ -269,7 +269,7 @@ fit_mediation <- cfa(model_mediation, # model formula
            data=ess_df                # data frame
   )
 
-summary(fit_mediation)
+summary(fit_mediation, standardized=TRUE)
 
 ```
 
@@ -299,7 +299,7 @@ plot_mediation
 
 **Q:** The path between welfare support and income (direct effect) is not significant. Nor the total effect. What does that mean ?
 
-Zhao, Lynch and Chen (2010) classify mediation effects as following:
+Zhao, Lynch and Chen [-@zhao2010reconsidering] classify mediation effects as following:
 
 - Complementary mediation: Mediated effect (a x b) and direct effect (c) both exist and point at the same direction.
 - Competitive mediation: Mediated effect (a x b) and direct effect (c) both exist and point in opposite directions.
@@ -307,6 +307,7 @@ Zhao, Lynch and Chen (2010) classify mediation effects as following:
 - Direct-only non-mediation: Direct effect (c) exists, but no indirect effect.
 - No-effect non-mediation: Nether direct effect (c), nor indirect effect exists.
 
+# References 
 
 
 
