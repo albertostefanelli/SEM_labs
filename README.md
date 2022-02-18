@@ -1,4 +1,4 @@
-Repo for the SEM Labs at KUL and ECPR 
+# Repo for the SEM Labs at KUL and ECPR 
 
 The repo contains the lab session in rmd for the Structural Equation Modelling curses at KU Leuven and the Method School of the European Consortium of Political Research. 
 
