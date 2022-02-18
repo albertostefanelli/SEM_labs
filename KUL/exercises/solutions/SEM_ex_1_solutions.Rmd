@@ -3,7 +3,7 @@ title:  Structural Equation Modeling | Exercises 1
 author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
 # date: "`r Sys.Date()`"
 # fontsize: 10pt 
-bibliography: lib.bib
+bibliography: ../lib.bib
 link-citations: yes
 output:
   #pdf_document:
@@ -143,7 +143,7 @@ library("corrplot")
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
-ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/data/ESS4_belgium.sav")
 
 model_ws_6_1 <-'welf_supp =~ gvslvol + gvslvue + gvhlthc + gvcldcr + gvjbevn + gvpdlwk'
 
@@ -236,7 +236,7 @@ fit_wc_1_factor <- cfa(model_wc_1_factor, # model formula
                       data = ess_df       # data frame
   )
 
-summary(fit_wc_1_factor)
+summary(fit_wc_1_factor, standardized=TRUE)
 
 model_wc_3_factor <-'
 ## Economic criticism ##
@@ -251,7 +251,7 @@ fit_wc_3_factor <- cfa(model_wc_3_factor,  # model formula
                       data = ess_df        # data frame
   )
 
-summary(fit_wc_3_factor)
+summary(fit_wc_3_factor, standardized=TRUE)
 
 
 fitm_model_wc_1_factor <-  fitMeasures(fit_wc_1_factor, c("logl",
@@ -302,7 +302,7 @@ fit_wc_3_factor_mod <- cfa(model_wc_3_factor_mod, # model formula
                            data = ess_df         # data frame
   )
 
-summary(fit_wc_3_factor_mod)
+summary(fit_wc_3_factor_mod, standardized=TRUE)
 
 fitm_model_wc_3_factor_mod <- fitMeasures(fit_wc_3_factor_mod, c("logl",
                                                   "AIC", 
@@ -350,7 +350,7 @@ fit_wc_2_order <- cfa(model_wc_2_order,  # model formula
                       data = ess_df      # data frame
   )
 
-summary(fit_wc_2_order)
+summary(fit_wc_2_order, standardized=TRUE)
 
 inspect(fit_wc_2_order, "r2")
 
@@ -381,7 +381,7 @@ fit_wc_2_order_mod <- cfa(model_wc_2_order_mod,  # model formula
                           data = ess_df          # data frame
   ) 
 
-summary(fit_wc_2_order_mod)
+summary(fit_wc_2_order_mod, standardized=TRUE)
 
 
 ```
@@ -423,7 +423,7 @@ fit_wc_2_factor_corr <- cfa(model_wc_2_factor_corr,  # model formula
                             data = ess_df            # data frame
   )
 
-summary(fit_wc_2_factor_corr, fit.measures=TRUE)
+summary(fit_wc_2_factor_corr, fit.measures=TRUE, standardized=TRUE)
 
 
 ```
