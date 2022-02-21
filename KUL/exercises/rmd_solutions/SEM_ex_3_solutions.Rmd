@@ -3,7 +3,7 @@ title:  Structural Equation Modeling | Exercise 3
 author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
 # date: "`r Sys.Date()`"
 # fontsize: 10pt 
-bibliography: lib.bib
+bibliography: ../lib.bib
 link-citations: yes
 output:
   #pdf_document:
@@ -147,7 +147,7 @@ library("purrr")
 Configural invariance model 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
-ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/data/ESS4_belgium.sav")
 
 # lavaan requires the grouping variable to be a factor 
 # gender is coded as 1 Male, 2 Female
@@ -181,7 +181,10 @@ fit_configural <- cfa(model_ws_config,
                       group = "gndr")
 
 
-summary(fit_configural)
+summary(fit_configural, 
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
 
 
 
@@ -221,7 +224,10 @@ fit_configural_cov <- cfa(model_ws_config_cov,
                       group = "gndr")
 
 
-summary(fit_configural_cov)
+summary(fit_configural_cov,
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
 
 
 
@@ -256,7 +262,10 @@ fit_metric <- cfa(model_ws_metric,
                       group = "gndr")
 
 
-summary(fit_metric)
+summary(fit_metric,
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
 
 
 
@@ -291,7 +300,10 @@ fit_scalar <- cfa(model_ws_scalar,
                       group = "gndr")
 
 
-summary(fit_scalar)
+summary(fit_scalar, 
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
 
 
 ```
@@ -333,6 +345,8 @@ table_anova <- list(anova(fit_conf_gvcldcr, fit_metric_gvcldcr),
 
 table_anova
 ```
+
+
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
 lavTestScore(fit_scalar_gvcldcr)
@@ -406,7 +420,10 @@ fit_mediation_mg <- cfa(model_mediation_mg,       # model formula
 
   )
 
-summary(fit_mediation_mg)
+summary(fit_mediation_mg, 
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
 
 ```
 
@@ -464,7 +481,10 @@ fit_mediation_mg_path_a <- cfa(model_mediation_mg_path_a, # model formula
 
   )
 
-anova(fit_mediation_mg, fit_mediation_mg_path_a)
+anova(fit_mediation_mg,
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
 
 ```
 
@@ -579,7 +599,10 @@ fit_mediation_mg_diff <- cfa(model_mediation_mg_diff, # model formula
 
   )
 
-summary(fit_mediation_mg_diff)
+summary(fit_mediation_mg_diff,
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
 
 ```
 

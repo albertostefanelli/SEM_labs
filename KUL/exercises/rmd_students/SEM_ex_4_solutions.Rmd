@@ -3,7 +3,7 @@ title:  Structural Equation Modeling | Exercises 4
 author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
 # date: "`r Sys.Date()`"
 # fontsize: 10pt 
-bibliography: lib.bib
+bibliography: ../lib.bib
 link-citations: yes
 output:
   #pdf_document:
@@ -113,6 +113,12 @@ First, let's load the necessary packages to load, manipulate, visualize and anal
 # install.packages("purrr")                 # table manipulation 
 
 ### MODELING ###
+
+#### For MVN we need install.packages("gsl"). 
+#### On mac with homebrewed packaged:
+#### CFLAGS="-I/opt/homebrew/Cellar/gsl/2.7.1/include" LDFLAGS="-L/opt/homebrew/Cellar/gsl/2.7.1/lib -lgsl -lgslcblas" R
+#### install.packages("gsl")
+
 # install.packages("lavaan")                # SEM modelling
 # install.packages("MVN")                   # tests for multivariate normality
 # install.packages("Amelia")                # performing multiple imputation
@@ -152,16 +158,15 @@ library("patchwork")
 4. Compare fit statistics, loadings, and standard errors. 
 5. Remove the covariance between egalitarianism and welfare support and re-estimate the model. Compare the fit (OPTIONAL). 
 
-```{r, echo=T, message=FALSE, warning=FALSE}
-ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/ESS4_belgium.sav")
+```{r, echo=T, message=FALSE, warning=FALSE, eval=FALSE}
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/data/ESS4_belgium.sav")
 
 # select the egalitarianism and welfare support items
 ess_df_eg <- ess_df[,c("gincdif", "dfincac", "smdfslv", "gvslvol", "gvhlthc", "gvcldcr","gvpdlwk")]
 # remove NAs
 ess_df_eg_na <- na.omit(ess_df_eg)
 
-mvn_test <- mvn(data = ess_df_eg_na, # our data without NAs
-                mvnTest = c("hz")    # type of normality test to perform
+mvn_test <- mvn(
                 )
 
 mvn_test
@@ -179,53 +184,34 @@ fit_eg_ws_ml <- cfa(model_eg_ws,    # model formula
                   estimator = "ML"  # select the estimator 
 )
 
-summary(fit_eg_ws_ml,
-         fit.measures=TRUE)
+summary(
 
-fit_eg_ws_mlr <- cfa(model_eg_ws,       # model formula
-                  data = ess_df,        # data frame
-                  estimator = "MLR"     # select the estimator 
+fit_eg_ws_mlr <- cfa(
 )
 
-summary(fit_eg_ws_mlr,
-        fit.measures=TRUE)
+summary()
 
 
-tidy_results_ml <- table_results(fit_eg_ws_ml,        
-  columns = c("label", 
-              "est_sig", 
-              "se"),
-  digits = 2
+tidy_results_ml <- table_results(
 )
 
-tidy_results_mlr <- table_results(fit_eg_ws_mlr,        
-  columns = c("label", 
-              "est_sig", 
-              "se"),
-  digits = 2
+tidy_results_mlr <- table_results(
 )
 
 
 
-data.frame(Parameters = tidy_results_mlr$label, 
-           "ML Model" = paste(tidy_results_ml$est_sig,"(",tidy_results_ml$se, ")"),
-           "MLR Model" = paste(tidy_results_mlr$est_sig,"(",tidy_results_mlr$se, ")")
+data.frame(Parameters = , 
+           "ML Model" = ,
+           "MLR Model" = 
 )
 
 
 
 model_eg_ws_cov <- '
-## Egalitarianism ##
-egual =~  gincdif + dfincac + smdfslv
-## Welfare support ##
-wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
-wc_socia ~~ 0*egual
+
 '
 
-fit_eg_ws_mlr_cov <- cfa(model_eg_ws_cov,    # model formula
-                  data = ess_df,             # data frame
-                  estimator = "MLR"          # select the estimator 
-)
+fit_eg_ws_mlr_cov <- cfa(
 
 summary(fit_eg_ws_mlr_cov)
 
@@ -236,16 +222,14 @@ model_fit <-  function(lavobject) {
 }
 
 table_fit <- 
-  list(model_fit(fit_eg_ws_mlr), 
-       model_fit(fit_eg_ws_mlr_cov)) %>% 
-  reduce(rbind)
+
  
 
-rownames(table_fit) <- c("eg_ws_mlr", "eg_ws_mlr_cov")
+rownames(table_fit) <-
 
 table_fit
 
-anova(fit_eg_ws_mlr, fit_eg_ws_mlr_cov)
+anova(, )
 
 ```
 
@@ -259,17 +243,17 @@ anova(fit_eg_ws_mlr, fit_eg_ws_mlr_cov)
 
 Lavaan syntax for relaxing equality constraints:
 
-```{r, echo=T, message=FALSE, warning=FALSE,eval=FALSE}
+```{r, echo=T, message=FALSE, warning=FALSE, eval=FALSE}
 y | c(label1,label1)*t1 # set threshold equal across 2 groups
 y | c(label1,label2)*t1 # set threshold free across 2 groups
 u3 ~*~ c(1,1)*u3 # fix scale of the endogenous variable "u3" to 1 in both groups
 ```
 
 
-```{r, echo=T, message=FALSE, warning=FALSE}
-ess_df$gndr <- factor(ess_df$gndr,
-                      levels = c("1", "2"),         # levels 
-                      labels = c("Male", "Female")) # labels 
+```{r, echo=T, message=FALSE, warning=FALSE, eval=FALSE}
+ess_df$gndr <- factor(
+  
+) # labels 
 
 model_eg_sc <- '
 ## Egalitarianism ##
@@ -278,123 +262,46 @@ egual =~  gincdif + dfincac + smdfslv
 wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
 '
 
-fit_eg_sc_conf<- cfa(model_eg_sc,           # model formula
-                     data = ess_df,         # data frame
-                     estimator = "WLSMV",   # select the estimator 
-                     group = "gndr",
+fit_eg_sc_conf<- cfa(,
                      ordered = c(
-                     "gincdif",
-                     "dfincac",
-                     "smdfslv",
-                     "sbprvpv",
-                     "sbeqsoc",
-                     "sbcwkfm" )
+
           )
 
 
-fit_eg_sc_metric <- cfa(model_eg_sc,           # model formula
-                     data = ess_df,            # data frame
-                     estimator = "WLSMV",      # select the estimator 
-                     group = "gndr",
-                     ordered = c(
-                     "gincdif",
-                     "dfincac",
-                     "smdfslv",
-                     "sbprvpv",
-                     "sbeqsoc",
-                     "sbcwkfm" ),
-                     group.equal=c("loadings")
+fit_eg_sc_metric <- cfa(
 )
 
-fit_eg_sc_scalar <- cfa(model_eg_sc,       # model formula
-                     data = ess_df,        # data frame
-                     estimator = "WLSMV",  # select the estimator 
-                     group = "gndr",
-                     ordered = c(
-                     "gincdif",
-                     "dfincac",
-                     "smdfslv",
-                     "sbprvpv",
-                     "sbeqsoc",
-                     "sbcwkfm" ),
-                     group.equal=c("loadings",
-                                "thresholds")
+fit_eg_sc_scalar <- cfa(
 )
 
 anova(fit_eg_sc_conf,fit_eg_sc_metric,fit_eg_sc_scalar)
 
-# According to the Lagrange multiplier test it seems that  an improvement in fit over the metric model is difficult 
-# However, for didactic purpose we are going to free the the equality constraints with the highest chi-square contribution 
-lavTestScore(fit_eg_sc_scalar)
-parTable(fit_eg_sc_scalar)
-# according to lavTestScore the most problematic parameter is .p11.	==	.p64. which correspond to dfincac	|	t1
+
 
 model_eg_sc_p <- '
-## Egalitarianism ##
-egual =~  gincdif + dfincac + smdfslv
-## Social Criticism ##
-wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
-# fix scale of variable "dfincac" to 1 in both groups
-dfincac ~*~ c(1,1)*dfincac
+
 
 '
 
-fit_eg_sc_metric_p <- cfa(model_eg_sc_p,       # model formula
-                     data = ess_df,            # data frame
-                     estimator = "WLSMV",      # select the estimator 
-                     group = "gndr",
-                     ordered = c(
-                     "gincdif",
-                     "dfincac",
-                     "smdfslv",
-                     "sbprvpv",
-                     "sbeqsoc",
-                     "sbcwkfm" ),
-                     group.equal=c("loadings","thresholds"),
+fit_eg_sc_metric_p <- cfa(
+                     group.equal=c(),
                      # relax the threshold t1 of the variable dfincac
-                     group.partial=c("equal =~ dfincac","dfincac | t1")) 
+                     group.partial=c()) 
 
 # we do not reach partial invariance
-anova(fit_eg_sc_conf,fit_eg_sc_metric,fit_eg_sc_metric_p)
+anova( , , )
 
 
-fit_eg_sc_metric_c <- cfa(model_eg_sc,           # model formula
-                     data = ess_df,            # data frame
-                     estimator = "ML",         # select the estimator 
-                     group = "gndr",
-                     group.equal=c("loadings")
+fit_eg_sc_metric_c <- cfa(
 )
 
 table_fit <- 
-  list(model_fit(fit_eg_sc_metric_c), 
-       model_fit(fit_eg_sc_metric)) %>% 
-  reduce(rbind)
  
 
-rownames(table_fit) <- c("Continous", "Ordinal")
+rownames(table_fit) <- 
 
 table_fit
 
-tidy_results_continous <- table_results(fit_eg_sc_metric_c,        
-  columns = c("label", 
-              "est_sig", 
-              "se"),
-  digits = 2
-)
-
-tidy_results_ordinal <- table_results(fit_eg_sc_metric,        
-  columns = c("label", 
-              "est_sig", 
-              "se"),
-  digits = 2
-)
-
-
-
-data.frame(Parameters = tidy_results_continous$label[1:6], 
-           "Continous Model" = paste(tidy_results_continous$est_sig[1:6],"(",tidy_results_continous$se[1:6], ")"),
-           "Ordinal Model" = paste(tidy_results_ordinal$est_sig[1:6],"(",tidy_results_ordinal$se[1:6], ")")
-)
 
 
 

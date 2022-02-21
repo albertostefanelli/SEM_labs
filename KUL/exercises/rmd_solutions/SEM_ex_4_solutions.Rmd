@@ -1,0 +1,410 @@
+---
+title:  Structural Equation Modeling | Exercises 4
+author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
+# date: "`r Sys.Date()`"
+# fontsize: 10pt 
+bibliography: ../lib.bib
+link-citations: yes
+output:
+  #pdf_document:
+  rmdformats::readthedown:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: false
+    highlight: tango
+    use_bookdown: true
+    fig_width: 12
+    fig_height: 8
+# header-includes
+---
+<style type="text/css">
+#content {
+    max-width: 1500px !important;
+/*    !margin-left: 300px !important;
+*/
+}
+#table-of-contents {
+    width: 300px !important;
+}
+
+#postamble {
+  font-size: 10px;
+}
+
+pre{
+  background-color: #FFFFFF;
+    font-size: 12px;
+}
+pre:not([class]) {
+  background-color: #D8D8D8;
+    color: black;
+}
+
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(tidy=FALSE, 
+  fig.show = 'hold', 
+  fig.align = "center", 
+  warning = FALSE, 
+  message = FALSE, 
+  comment = '')
+options(width = 300, scipen = 9999)
+
+# last dev version is needed for rmdformats.
+# more info https://github.com/juba/rmdformats/issues/92 
+# devtools::install_github("juba/rmdformats")
+
+```
+
+
+# What we are going to cover 
+
+1. Ex.1 -- Non-normal continuous data
+2. Ex.2 -- Categorical data multi-group 
+
+# Data 
+
+The data set used throughout is the European Social Survey ESS4-2008 Edition 4.5 was released on 1 December 2018. We will restrict the analysis to the Belgian case.  Each line in the data set represents a Belgian respondent. The full dataset an documentation can be found on the [ESS website](https://www.europeansocialsurvey.org/data/download.html?r=4)
+
+Codebook:
+
+- **gvslvol** Standard of living for the old, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvslvue** Standard of living for the unemployed, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvhlthc** Health care for the sick, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvcldcr** Child care services for working parents, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvjbevn** Job for everyone, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+- **gvpdlwk** Paid leave from work to care for sick family, governments' responsibility (0 Not governments' responsibility at all - 10 Entirely governments' responsibility)
+
+- **sbstrec** Social benefits/services place too great strain on economy (1 Agree strongly - 5 Disagree strongly)
+- **sbbsntx** Social benefits/services cost businesses too much in taxes/charges (1 Agree strongly - 5 Disagree strongly)
+- **sbprvpv** Social benefits/services prevent widespread poverty (1 Agree strongly - 5 Disagree strongly)
+- **sbeqsoc** Social benefits/services lead to a more equal society (1 Agree strongly - 5 Disagree strongly)
+- **sbcwkfm** Social benefits/services make it easier to combine work and family (1 Agree strongly - 5 Disagree strongly)
+- **sblazy**  Social benefits/services make people lazy (1 Agree strongly - 5 Disagree strongly)
+- **sblwcoa** Social benefits/services make people less willing care for one another (1 Agree strongly - 5 Disagree strongly)
+- **sblwlka** Social benefits/services make people less willing look after themselves/family (1 Agree strongly - 5 Disagree strongly)
+
+- **agea** Respondent's age
+- **eduyrs** Years of full-time education completed
+- **gndr** Gender (1 Male, 2 Female)
+- **hinctnta** Household's total net income, all sources (Deciles of the actual household income range in the given country.)
+
+- **gincdif** Government should reduce differences in income levels  (1 Agree strongly - 5 Disagree strongly)
+- **dfincac** Large differences in income acceptable to reward talents and efforts  (1 Agree strongly - 5 Disagree strongly)
+- **smdfslv** For fair society, differences in standard of living should be small  (1 Agree strongly - 5 Disagree strongly)
+
+
+# Environment preparation 
+
+First, let's load the necessary packages to load, manipulate, visualize and analyse the data. 
+
+```{r, echo=T, message=FALSE, warning=FALSE,cache=F}
+
+
+# Uncomment this once if you need to install the packages on your system 
+
+### DATA MANIPULATION ###
+# install.packages("haven")                 # data import from spss
+# install.packages("dplyr")                 # data manipulation
+# install.packages("psych")                 # descriptives
+# install.packages("stringr")               # string manipulation
+# install.packages("purrr")                 # table manipulation 
+
+### MODELING ###
+# install.packages("lavaan")                # SEM modelling
+# install.packages("MVN")                   # tests for multivariate normality
+# install.packages("Amelia")                # performing multiple imputation
+
+### VISUALIZATION ###
+# install.packages("tidySEM")               # plotting SEM models
+# install.packages("ggplot2")               # plotting 
+# install.packages("patchwork")             # organization plots
+
+# Load the packages 
+
+### DATA MANIPULATION ###
+library("haven")        
+library("dplyr")      
+library("psych")
+library("stringr")
+library("purrr")
+
+### MODELING ###
+library("lavaan")       
+library("MVN")
+library("Amelia")
+
+### VISUALIZATION ###
+library("tidySEM")
+library("ggplot2")              
+library("patchwork")    
+
+
+```
+
+# Ex.1 -- Non-normal continuous data
+
+1. Check the multivariate normality for the question gincdif, dfincac, smdfslv (egalitarianism) and gvslvol gvhlthc gvcldcr gvpdlwk (welfare support) . 
+2. Estimate a simple CFA (2 latent variable), without any error covariances for egalitarianism (gincdif, dfincac, smdfslv) and welfare support (gvslvol gvhlthc gvcldcr gvpdlwk)
+3. Estimate the model using the ML estimation, then re-estimate using MLM. 
+4. Compare fit statistics, loadings, and standard errors. 
+5. Remove the covariance between egalitarianism and welfare support and re-estimate the model. Compare the fit (OPTIONAL). 
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/data/ESS4_belgium.sav")
+
+# select the egalitarianism and welfare support items
+ess_df_eg <- ess_df[,c("gincdif", "dfincac", "smdfslv", "gvslvol", "gvhlthc", "gvcldcr","gvpdlwk")]
+# remove NAs
+ess_df_eg_na <- na.omit(ess_df_eg)
+
+mvn_test <- mvn(data = ess_df_eg_na, # our data without NAs
+                mvnTest = c("hz")    # type of normality test to perform
+                )
+
+mvn_test
+
+
+model_eg_ws <- '
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+## Welfare support ##
+ws =~   gvslvol + gvhlthc + gvcldcr + gvpdlwk   
+'
+
+fit_eg_ws_ml <- cfa(model_eg_ws,    # model formula
+                  data = ess_df,    # data frame
+                  estimator = "ML"  # select the estimator 
+)
+
+summary(fit_eg_ws_ml,
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
+fit_eg_ws_mlr <- cfa(model_eg_ws,       # model formula
+                  data = ess_df,        # data frame
+                  estimator = "MLR"     # select the estimator 
+)
+
+summary(fit_eg_ws_mlr,
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
+
+
+tidy_results_ml <- table_results(fit_eg_ws_ml,        
+  columns = c("label", 
+              "est_sig", 
+              "se"),
+  digits = 2
+)
+
+tidy_results_mlr <- table_results(fit_eg_ws_mlr,        
+  columns = c("label", 
+              "est_sig", 
+              "se"),
+  digits = 2
+)
+
+
+
+data.frame(Parameters = tidy_results_mlr$label, 
+           "ML Model" = paste(tidy_results_ml$est_sig,"(",tidy_results_ml$se, ")"),
+           "MLR Model" = paste(tidy_results_mlr$est_sig,"(",tidy_results_mlr$se, ")")
+)
+
+
+
+model_eg_ws_cov <- '
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+## Welfare support ##
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+wc_socia ~~ 0*egual
+'
+
+fit_eg_ws_mlr_cov <- cfa(model_eg_ws_cov,    # model formula
+                  data = ess_df,             # data frame
+                  estimator = "MLR"          # select the estimator 
+)
+
+summary(fit_eg_ws_mlr_cov,
+        standardized=TRUE, 
+        fit.measures = TRUE
+)
+
+# let's compare the fit of the different models
+model_fit <-  function(lavobject) {
+  vars <- c("chisq", "df", "cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "rmsea.pvalue", "srmr")
+  return(fitmeasures(lavobject)[vars] %>% data.frame() %>% round(2) %>% t())
+}
+
+table_fit <- 
+  list(model_fit(fit_eg_ws_mlr), 
+       model_fit(fit_eg_ws_mlr_cov)) %>% 
+  reduce(rbind)
+ 
+
+rownames(table_fit) <- c("eg_ws_mlr", "eg_ws_mlr_cov")
+
+table_fit
+
+anova(fit_eg_ws_mlr, fit_eg_ws_mlr_cov)
+
+```
+
+# Ex.2 -- Measurement invariance with categorical data 
+
+1. Re-estimate a CFA (2 latent variable) for egalitarianism (gincdif, dfincac, smdfslv) and welfare support (gvslvol gvhlthc gvcldcr gvpdlwk) treating the items as ordinal  
+2. Test if the two latent constructs reach scalar invariance between male and feamle (free/fixed factor loading and thresholds). 
+4. Compare and interpret the fit. 
+5. Even if not necessary, relax certain equality constraints, re-fit the model, compare the fit. 
+5. Compare the metric model fitted with continuous data with the one fitted with ordinal data (OPTIONAL)
+
+Lavaan syntax for relaxing equality constraints:
+
+```{r, echo=T, message=FALSE, warning=FALSE,eval=FALSE}
+y | c(label1,label1)*t1 # set threshold equal across 2 groups
+y | c(label1,label2)*t1 # set threshold free across 2 groups
+u3 ~*~ c(1,1)*u3 # fix scale of the endogenous variable "u3" to 1 in both groups
+```
+
+
+```{r, echo=T, message=FALSE, warning=FALSE}
+ess_df$gndr <- factor(ess_df$gndr,
+                      levels = c("1", "2"),         # levels 
+                      labels = c("Male", "Female")) # labels 
+
+model_eg_sc <- '
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+## Social Criticism ##
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+'
+
+fit_eg_sc_conf<- cfa(model_eg_sc,           # model formula
+                     data = ess_df,         # data frame
+                     estimator = "WLSMV",   # select the estimator 
+                     group = "gndr",
+                     ordered = c(
+                     "gincdif",
+                     "dfincac",
+                     "smdfslv",
+                     "sbprvpv",
+                     "sbeqsoc",
+                     "sbcwkfm" )
+          )
+
+
+fit_eg_sc_metric <- cfa(model_eg_sc,           # model formula
+                     data = ess_df,            # data frame
+                     estimator = "WLSMV",      # select the estimator 
+                     group = "gndr",
+                     ordered = c(
+                     "gincdif",
+                     "dfincac",
+                     "smdfslv",
+                     "sbprvpv",
+                     "sbeqsoc",
+                     "sbcwkfm" ),
+                     group.equal=c("loadings")
+)
+
+fit_eg_sc_scalar <- cfa(model_eg_sc,       # model formula
+                     data = ess_df,        # data frame
+                     estimator = "WLSMV",  # select the estimator 
+                     group = "gndr",
+                     ordered = c(
+                     "gincdif",
+                     "dfincac",
+                     "smdfslv",
+                     "sbprvpv",
+                     "sbeqsoc",
+                     "sbcwkfm" ),
+                     group.equal=c("loadings",
+                                "thresholds")
+)
+
+anova(fit_eg_sc_conf,fit_eg_sc_metric,fit_eg_sc_scalar)
+
+# According to the Lagrange multiplier test it seems that  an improvement in fit over the metric model is difficult 
+# However, for didactic purpose we are going to free the the equality constraints with the highest chi-square contribution 
+lavTestScore(fit_eg_sc_scalar)
+parTable(fit_eg_sc_scalar)
+# according to lavTestScore the most problematic parameter is .p11.	==	.p64. which correspond to dfincac	|	t1
+
+model_eg_sc_p <- '
+## Egalitarianism ##
+egual =~  gincdif + dfincac + smdfslv
+## Social Criticism ##
+wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
+# fix scale of variable "dfincac" to 1 in both groups
+dfincac ~*~ c(1,1)*dfincac
+
+'
+
+fit_eg_sc_metric_p <- cfa(model_eg_sc_p,       # model formula
+                     data = ess_df,            # data frame
+                     estimator = "WLSMV",      # select the estimator 
+                     group = "gndr",
+                     ordered = c(
+                     "gincdif",
+                     "dfincac",
+                     "smdfslv",
+                     "sbprvpv",
+                     "sbeqsoc",
+                     "sbcwkfm" ),
+                     group.equal=c("loadings","thresholds"),
+                     # relax the threshold t1 of the variable dfincac
+                     group.partial=c("equal =~ dfincac","dfincac | t1")) 
+
+# we do not reach partial invariance
+anova(fit_eg_sc_conf,fit_eg_sc_metric,fit_eg_sc_metric_p)
+
+
+fit_eg_sc_metric_c <- cfa(model_eg_sc,           # model formula
+                     data = ess_df,            # data frame
+                     estimator = "ML",         # select the estimator 
+                     group = "gndr",
+                     group.equal=c("loadings")
+)
+
+table_fit <- 
+  list(model_fit(fit_eg_sc_metric_c), 
+       model_fit(fit_eg_sc_metric)) %>% 
+  reduce(rbind)
+ 
+
+rownames(table_fit) <- c("Continous", "Ordinal")
+
+table_fit
+
+tidy_results_continous <- table_results(fit_eg_sc_metric_c,        
+  columns = c("label", 
+              "est_sig", 
+              "se"),
+  digits = 2
+)
+
+tidy_results_ordinal <- table_results(fit_eg_sc_metric,        
+  columns = c("label", 
+              "est_sig", 
+              "se"),
+  digits = 2
+)
+
+
+
+data.frame(Parameters = tidy_results_continous$label[1:6], 
+           "Continous Model" = paste(tidy_results_continous$est_sig[1:6],"(",tidy_results_continous$se[1:6], ")"),
+           "Ordinal Model" = paste(tidy_results_ordinal$est_sig[1:6],"(",tidy_results_ordinal$se[1:6], ")")
+)
+
+
+
+```
+
+
+
