@@ -9,6 +9,7 @@ Changelog:
 
 1. 00/00/2021 - First version 
 2. 18/02/2022 - Reorganization 
+3. 22/02/2022 - Update links 
 
 
 ## Structural Equations G0B65B (KUL)
