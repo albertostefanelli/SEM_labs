@@ -201,6 +201,7 @@
       <ul>
       <li><a href="#imputing-missing-data"><span class="toc-section-number">6.1</span> Imputing missing data</a></li>
       </ul></li>
+      <li><a href="#support-ukraine"><span class="toc-section-number">7</span> !!Support Ukraine!!</a></li>
       <li><a href="#references">References</a></li>
       </ul>
     </div>
@@ -1029,11 +1030,11 @@ sblwlka      0.007954545</code></pre>
  [3,]    2 2.000000
  [4,]    2 2.000000
  [5,]    3 3.000000
- [6,]   NA 4.212637
+ [6,]   NA 3.712241
  [7,]    2 2.000000
  [8,]    4 4.000000
- [9,]   NA 3.882116
-[10,]   NA 4.757909
+ [9,]   NA 3.200630
+[10,]   NA 3.201157
 [11,]    3 3.000000</code></pre>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we need to use semTools to fit a lavaan model to multiple imputed data sets</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1058,22 +1059,22 @@ Rubin&#39;s (1987) rules were used to pool point and SE estimates across 15 impu
 
 Model Test User Model:
 
-  Test statistic                                74.519      66.234
+  Test statistic                                75.588      67.286
   Degrees of freedom                                17          17
   P-value                                        0.000       0.000
-  Scaling correction factor                                  1.125
+  Scaling correction factor                                  1.123
 
 Model Test Baseline Model:
 
-  Test statistic                              2489.987    1955.317
+  Test statistic                              2497.913    1961.807
   Degrees of freedom                                28          28
   P-value                                        0.000       0.000
   Scaling correction factor                                  1.273
 
 User Model versus Baseline Model:
 
-  Comparative Fit Index (CFI)                    0.977       0.974
-  Tucker-Lewis Index (TLI)                       0.962       0.958
+  Comparative Fit Index (CFI)                    0.976       0.974
+  Tucker-Lewis Index (TLI)                       0.961       0.957
                                                                   
   Robust Comparative Fit Index (CFI)                         0.977
   Robust Tucker-Lewis Index (TLI)                            1.000
@@ -1082,12 +1083,12 @@ Root Mean Square Error of Approximation:
 
   RMSEA                                          0.044       0.041
   90 Percent confidence interval - lower         0.034       0.033
-  90 Percent confidence interval - upper         0.054       0.054
-  P-value RMSEA &lt;= 0.05                          0.826       0.940
+  90 Percent confidence interval - upper         0.055       0.054
+  P-value RMSEA &lt;= 0.05                          0.809       0.931
                                                                   
   Robust RMSEA                                               0.043
-  90 Percent confidence interval - lower                     0.032
-  90 Percent confidence interval - upper                     0.054
+  90 Percent confidence interval - lower                     0.033
+  90 Percent confidence interval - upper                     0.055
 
 Standardized Root Mean Square Residual:
 
@@ -1102,38 +1103,38 @@ Parameter Estimates:
 Latent Variables:
                    Estimate  Std.Err  t-value       df  P(&gt;|t|)   Std.lv  Std.all
   wc_econo =~                                                                    
-    sbstrec           1.000                                        0.623    0.611
-    sbbsntx           1.008    0.099   10.168      Inf    0.000    0.628    0.630
+    sbstrec           1.000                                        0.622    0.610
+    sbbsntx           1.011    0.099   10.159      Inf    0.000    0.629    0.630
   wc_socia =~                                                                    
     sbprvpv           1.000                                        0.472    0.542
-    sbeqsoc           1.417    0.252    5.615      Inf    0.000    0.670    0.803
-    sbcwkfm           0.628    0.063    9.911      Inf    0.000    0.297    0.382
+    sbeqsoc           1.416    0.254    5.579      Inf    0.000    0.669    0.803
+    sbcwkfm           0.628    0.063    9.920      Inf    0.000    0.297    0.382
   wc_moral =~                                                                    
     sblazy            1.000                                        0.747    0.708
-    sblwcoa           1.064    0.046   23.352      Inf    0.000    0.795    0.768
-    sblwlka           0.976    0.046   21.159      Inf    0.000    0.729    0.705
+    sblwcoa           1.066    0.046   23.366      Inf    0.000    0.796    0.770
+    sblwlka           0.975    0.046   21.175      Inf    0.000    0.728    0.704
 
 Covariances:
                    Estimate  Std.Err  t-value       df  P(&gt;|t|)   Std.lv  Std.all
   wc_econo ~~                                                                    
-    wc_socia         -0.019    0.017   -1.142      Inf    0.253   -0.065   -0.065
-    wc_moral          0.251    0.025   10.068      Inf    0.000    0.540    0.540
+    wc_socia         -0.020    0.017   -1.184      Inf    0.236   -0.067   -0.067
+    wc_moral          0.251    0.025   10.044      Inf    0.000    0.540    0.540
   wc_socia ~~                                                                    
-    wc_moral         -0.034    0.013   -2.632      Inf    0.008   -0.096   -0.096
+    wc_moral         -0.034    0.013   -2.645      Inf    0.008   -0.096   -0.096
 
 Variances:
                    Estimate  Std.Err  t-value       df  P(&gt;|t|)   Std.lv  Std.all
-   .sbstrec           0.651    0.047   13.804      Inf    0.000    0.651    0.627
-   .sbbsntx           0.599    0.043   13.914      Inf    0.000    0.599    0.603
-   .sbprvpv           0.538    0.044   12.199      Inf    0.000    0.538    0.707
-   .sbeqsoc           0.247    0.078    3.180      Inf    0.001    0.247    0.356
-   .sbcwkfm           0.516    0.026   19.938      Inf    0.000    0.516    0.854
-   .sblazy            0.555    0.032   17.217      Inf    0.000    0.555    0.499
-   .sblwcoa           0.439    0.031   14.301      Inf    0.000    0.439    0.410
-   .sblwlka           0.538    0.031   17.069      Inf    0.000    0.538    0.503
-    wc_econo          0.388    0.047    8.195      Inf    0.000    1.000    1.000
-    wc_socia          0.223    0.045    4.946      Inf    0.000    1.000    1.000
-    wc_moral          0.558    0.038   14.834      Inf    0.000    1.000    1.000</code></pre>
+   .sbstrec           0.652    0.047   13.818      Inf    0.000    0.652    0.627
+   .sbbsntx           0.600    0.043   13.880      Inf    0.000    0.600    0.603
+   .sbprvpv           0.537    0.044   12.142      Inf    0.000    0.537    0.706
+   .sbeqsoc           0.247    0.078    3.165      Inf    0.002    0.247    0.356
+   .sbcwkfm           0.515    0.026   19.883      Inf    0.000    0.515    0.854
+   .sblazy            0.555    0.032   17.216      Inf    0.000    0.555    0.498
+   .sblwcoa           0.437    0.031   14.214      Inf    0.000    0.437    0.408
+   .sblwlka           0.540    0.031   17.193      Inf    0.000    0.540    0.505
+    wc_econo          0.387    0.047    8.184      Inf    0.000    1.000    1.000
+    wc_socia          0.223    0.045    4.921      Inf    0.000    1.000    1.000
+    wc_moral          0.558    0.038   14.849      Inf    0.000    1.000    1.000</code></pre>
 <div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let&#39;s compare the fit of the different models</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>model_fit <span class="ot">&lt;-</span>  <span class="cf">function</span>(lavobject) {</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;chisq&quot;</span>, <span class="st">&quot;df&quot;</span>, <span class="st">&quot;cfi&quot;</span>, <span class="st">&quot;tli&quot;</span>, <span class="st">&quot;rmsea&quot;</span>, <span class="st">&quot;rmsea.ci.lower&quot;</span>, <span class="st">&quot;rmsea.ci.upper&quot;</span>, <span class="st">&quot;rmsea.pvalue&quot;</span>, <span class="st">&quot;srmr&quot;</span>)</span>
@@ -1153,7 +1154,7 @@ Variances:
 <pre><code>         chisq df  cfi  tli rmsea rmsea.ci.lower rmsea.ci.upper rmsea.pvalue srmr
 Listwise 71.35 17 0.98 0.96  0.04           0.03           0.05         0.83 0.03
 FIML     75.09 17 0.98 0.96  0.04           0.03           0.05         0.82 0.03
-Amelia   74.52 17 0.98 0.96  0.04           0.03           0.05         0.83 0.03</code></pre>
+Amelia   75.59 17 0.98 0.96  0.04           0.03           0.05         0.81 0.03</code></pre>
 <p><em>Q:</em> The fit statistics are similar across the models? Why?</p>
 <p>Notes:</p>
 <ol style="list-style-type: decimal">
@@ -1162,6 +1163,9 @@ Amelia   74.52 17 0.98 0.96  0.04           0.03           0.05         0.83 0.0
 <li>Variables to include in the imputation model: “When performing multiple imputation, the first step is to identify the variables to include in the imputation model. It is crucial to include at least as much information as will be used in the analysis model. That is, any variable that will be in the analysis model should also be in the imputation model. This includes any transformations or interactions of variables that will appear in the analysis model.”</li>
 </ol>
 </div>
+</div>
+<div id="support-ukraine" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> !!Support Ukraine!!</h1>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1>References</h1>

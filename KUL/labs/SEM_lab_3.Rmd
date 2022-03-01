@@ -505,5 +505,7 @@ On the contrary, a significant P-value would imply that some paths vary while ot
 
 This exercise of relaxing and imposing constraints is potentially very exploratory. Refrain from constraining and relaxing all paths and then choosing the most parsimonious model. Instead, choosing which paths to constrain should be motivated by solid theoretical expectations and your research questions. 
 
+# !!Support Ukraine!!
+
 # References 
 

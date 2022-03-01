@@ -438,6 +438,8 @@ Notes:
 2. Ordinal variables: “Users are advised to allow Amelia to impute non-integer values for any missing data, and to use these non-integer values in their analysis. Sometimes this makes sense, and sometimes this defies intuition.”
 3. Variables to include in the imputation model: “When performing multiple imputation, the first step is to identify the variables to include in the imputation model. It is crucial to include at least as much information as will be used in the analysis model. That is, any variable that will be in the analysis model should also be in the imputation model. This includes any transformations or interactions of variables that will appear in the analysis model.”
 
+# !!Support Ukraine!!
+
 # References 
 
 
