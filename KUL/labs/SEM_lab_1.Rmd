@@ -60,6 +60,12 @@ options(width = 300, scipen = 9999)
 
 ```
 
+# Let's pause for a sec
+
+![An artwork by Kamila Mankiewicz on the War in Ukraine](../Kamila Mankiewicz_Poland.png)
+
+
+
 # Lab sessions: why and how?
 
 1. Apply theoretical knowledge
