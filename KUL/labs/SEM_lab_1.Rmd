@@ -336,7 +336,8 @@ fit_ws_3 <- cfa(model_ws_3,             # model formula
                 data = ess_df_selected  # data frame
   )
 
-summary(fit_ws_3)
+summary(fit_ws_3, 
+        standardized = TRUE)
 
 ```
 
@@ -371,7 +372,8 @@ fit_ws_3_alt <- cfa(model_ws_3_alt,            # model formula
                     data = ess_df_selected     # data frame
   )
 
-summary(fit_ws_3_alt)
+summary(fit_ws_3_alt, 
+        standardized = TRUE)
 
 ```
 
@@ -390,7 +392,8 @@ fit_ws_6 <- cfa(model_ws_6,             # model formula
                 data = ess_df_selected  # data frame
   )
 
-
+summary(fit_ws_6, 
+        standardized = TRUE)
 ```
 
 **Q:** Why do we have 9 degrees of freedom in this model?
