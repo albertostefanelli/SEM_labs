@@ -510,3 +510,5 @@ tidy_results %>% filter(str_detect(label,
 
 ```
 Unsurprisingly, they are the same as the one that we calculated manually.
+
+# !!Support Ukraine!!
