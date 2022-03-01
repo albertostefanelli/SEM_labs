@@ -404,7 +404,7 @@ Important things to check after running the model:
 
 1. Estimates
     - Do the indicators load well on the factor(s)?
-2. Model fit
+2. Model fit [see next]
     - Are the fit indices good?
 3. Heywood cases/ reasonable solution
     - Are variances positive? 
@@ -421,14 +421,11 @@ fitted(fit_ws_6)
 residuals(fit_ws_6)
 # Returns the standard errors for the free parameters in the model.
 lavTech(fit_ws_6, "se")
-# Returns the fit statistics for our model.
-fitMeasures(fit_ws_6)
-# Returns the modification indices. 
-modificationIndices(fit_ws_6)
 # Returns the parameter estimates with confidence intervals.
 parameterEstimates(fit_ws_6, standardized=TRUE)
 
 ```
+
 Lavaan offers a quick way to check model fit and statistics 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
