@@ -10,6 +10,7 @@ Changelog:
 1. 00/00/2021 - First version 
 2. 18/02/2022 - Reorganization 
 3. 22/02/2022 - Update links 
+4. 17/03/2020 - added MENAS workshop
 
 
 ## Structural Equations G0B65B (KUL)
@@ -35,3 +36,8 @@ Changelog:
 - [Lab 4 - Laboratory](https://albertostefanelli.github.io/SEM_labs/KUL/labs/html_lab/SEM_lab_4.html)
 - [Lab 4 - Exercises](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_students/SEM_ex_4_students.html)
 - [Lab 4 - Solutions](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_solutions/SEM_ex_4_solutions.html)
+
+## Intro to Mediation Analysis with Structural Equation Modeling (MENAS)
+
+- [Lecture - PDF](https://albertostefanelli.github.io/SEM_labs/MENAS/out_folder/menas_presentation.pdf)
+- [Lab - HTL](https://albertostefanelli.github.io/SEM_labs/MENAS/out_folder/menas_lab.html)
