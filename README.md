@@ -40,4 +40,4 @@ Changelog:
 ## Intro to Mediation Analysis with Structural Equation Modeling (MENAS)
 
 - [Lecture - PDF](https://albertostefanelli.github.io/SEM_labs/MENAS/out_folder/menas_presentation.pdf)
-- [Lab - HTL](https://albertostefanelli.github.io/SEM_labs/MENAS/out_folder/menas_lab.html)
+- [Lab - HTML](https://albertostefanelli.github.io/SEM_labs/MENAS/out_folder/menas_lab.html)
