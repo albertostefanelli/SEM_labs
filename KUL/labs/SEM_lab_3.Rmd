@@ -1,5 +1,5 @@
 ---
-title:  Structural Equation Modeling | Lab Session 3
+title:  Mediation Analysis with Lavaan | Lab Session 3
 author: A. Stefanelli^[[Alberto  Stefanelli](https://albertostefanelli.com/)], A. Alanya^[[Ahu Alanya](https://www.kuleuven.be/wieiswie/en/person/00081320)], B. Meuleman^[[Bart Meuleman](https://www.kuleuven.be/wieiswie/en/person/00041613)]
 # date: "`r Sys.Date()`"
 # fontsize: 10pt 
