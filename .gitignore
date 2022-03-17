@@ -4,6 +4,7 @@
 **/.Ruserdata
 **/help.out
 **/.DS_Store
+/.DS_Store
 **/*.log
 .DS_Store
 .Rproj.user
