@@ -135,7 +135,7 @@ library("tidySEM")
 
 # Data exploration
 
-It is a good practice to check that everything is in order and make sense of the data that we are going to analyse. 
+It is always a good practice to check that everything is in order and make sense of the data that we are going to analyse. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 ess_df <- haven::read_sav("https://github.com/albertostefanelli/SEM_labs/raw/master/data/ESS4_belgium.sav")
@@ -217,7 +217,7 @@ ess_df$egal <- ess_df %>%
 
 # MIMIC model
 
-Now that we constructed our indicator, we can apply our theoretical knowledge and test some simple hypotheses. We hypothesise that respondents' structural characteristics influence their support of welfare state. These type of models are called MIMIC models and stands for “Multiple Indicators, Multiple Causes”.
+Now that we constructed our indicators, we can apply our theoretical knowledge and test some simple hypotheses. We hypothesise that respondent' structural characteristics influence their support for the welfare state. These type of models are called MIMIC models and stands for “Multiple Indicators, Multiple Causes”.
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
@@ -251,10 +251,10 @@ sample_var
 
 Let's compare the two different regression approaches
 
-1. Are the coefficient the same?
-2. Do we have the same number of estimated parameters?
-3. Is the number of degree of freedom the same across the two model?
-3. Are the residual variances equal?
+1. Are the coefficients the same (magnitude and significance)?
+2. Is the number of degree of freedom the same across the two estimators?
+3. Are we estimating the same number of parameters?
+4. Are the residual variances equal?
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
@@ -266,8 +266,8 @@ summary(lm_fit_ws_mimic_1)
 
 ```
 
+Let's compare the estimated coefficients. 
 
-Let's compare the estimated coefficients. They are identical (good!)
 ```{r, echo=T, message=FALSE, warning=FALSE}
 sem_tidy_results <- table_results(fit_ws_mimic_1,             
   columns = c("label", 
@@ -280,9 +280,9 @@ sem_tidy_results$est_sig_lm <- round(coef(lm_fit_ws_mimic_1)[-1],3)
 sem_tidy_results
 ```
 
-The regression coefficients are identical. 
+The regression coefficients are identical (good!). 
 
-One thing to note is that we don’t have an intercept in the lavaan output. This highlights an important difference that basic SEM often focuses on the covariance structure of the data. We can include means as well, but typically only when it’s relevant to our scientific questions. For example, when we fit multi-group models. 
+One thing to note is that we don’t have an intercept in the lavaan output. This highlights an important difference between ls and ML. SEM, and more in general ML, focuses on the covariance structure of the data. However, we can include an intercept (often called mean in SEM).  
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
@@ -290,17 +290,18 @@ model_ws_mimic_1 <-'
 welf_supp ~ 1 + welf_crit + gndr + eduyrs + hinctnta + agea
 '
 
-fit_ws_mimic_1 <- cfa(model_ws_mimic_1, # model formula
+fit_ws_mimic_1 <- sem(model_ws_mimic_1, # model formula
                    data=ess_df 
   )
 
 summary(fit_ws_mimic_1, 
         standardized=TRUE)
 ```
-The number of free parameters increase by 1 because we were estimating an additional intercept but this does not change the degrees of freedom because we are simply adding another term to the total parameters. However, we have 7 estimated parameters and 21 piece of informations in the variance-covariance matrix so we should have a total of 8 degree of freedom.
 
+Typically we include intercepts only when it’s relevant to our scientific questions. For example, when we fit multi-group models. It is worth noting that the number of free parameters increased by 1 because we were estimating an additional intercept but this does not change the degrees of freedom because we are simply adding another term to the total parameters. However, we have 7 estimated parameters and 21 piece of informations in the variance-covariance matrix so we should have a total of 8 degree of freedom instead of 0 as reported in the lavaan output. 
 
-Let's see what is happening under the hood. Let's first check the model and sample-implied covariance matricies 
+Let's try to understand what it is happening by looking at the model- and sample-implied covariance matrices. 
+
 ```{r, echo=T, message=FALSE, warning=FALSE}
 # Returns the observed covariance matrix.
 lavInspect(fit_ws_mimic_1, "sampstat")$cov
@@ -310,8 +311,7 @@ fitted(fit_ws_mimic_1, "theta")$cov
 ```
 
 
-There is no difference between the sample implied and the model-implied covariance matrices. This means that the fit function is equal to 0 and we are able to perfectly reproduce the structure of data. Given the fact that we have 0 degree of freedom , it is likely that we are fitting a fully saturated model where all the exogenous variables are correlated to each other. 
-
+There is no difference between the sample implied and the model-implied covariance matrices. This means that the fit function is equal to 0 and we are able to perfectly reproduce the structure of data. Given the fact that we have 0 degree of freedom, it is likely that we are fitting a fully saturated model where all the exogenous variables are correlated to each other. Let's check this by looking at what parameters are being estimated. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 lavTech(fit_ws_mimic_1, "est", add.labels = TRUE)
@@ -319,12 +319,12 @@ lavTech(fit_ws_mimic_1, "est", add.labels = TRUE)
 
 ```
 
-Let's see what we have in the output 
+Let's go through the output
 
-1. $\Lambda$ factor loading matrix. In this case is empty because we are not estimating any latent factor.
-2. $\Theta$ variance-covariance matrix of the residuals. Since the sample implied and model implied covariance matrices are the same, this is equal to 0
-3. $\Phi$ model implied variance-covariance matrix. We can observe that both variances and covariances of our predictors are estimated
-4  $\Beta$ matrix represent the regression path between endogenous and exogenous variables  
+1. $\Lambda$ factor loading matrix. In this case, it is empty because we are not estimating any latent factor.
+2. $\Theta$ variance-covariance matrix of the residuals. Since the sample implied and model implied covariance matrices are the same, this is equal to 0. 
+3. $\Phi$ model implied variance-covariance matrix. We can observe that **both variances and covariances** of our predictors are estimated!
+4  $\Beta$ matrix represents the regression path between endogenous and exogenous variables. 
 5. $\nu$ matrix indicates whether or not we estimate the intercept for the observed variables, 
 6. $\alpha$ matrix is the sample-implied intercept matrix. 
 
@@ -367,7 +367,7 @@ summary(fit_ws_mimic_2, standardized=TRUE)
 
 ```
 
-So, graphically, we are fitting a fully saturated model where both the residual variances and the covariances are estimated. 
+So, we are fitting a fully saturated model where both the residual variances and the covariances are estimated. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
@@ -376,10 +376,9 @@ semPlot::semPaths(fit_ws_mimic_1, title = FALSE, curvePivot = TRUE)
 ```
 
 
-
 ## Obtain the same residual variance between the LM and SEM model [OPTIONAL]
 
-As noted before, there is a discrepancy in what is reported in the `lm()` and `sem()` output concerning the residuals between. First we need to convert the residual standard error in residual variances to be allowed to compare them. 
+There is a discrepancy in what is reported in the `lm()` and `sem()` output concerning the residuals between. First we need to convert the residual standard error in residual variances to be allowed to compare them. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
@@ -463,15 +462,14 @@ The lm estimate is now equal to the one we obtain from the ML.
 
 *Take home:*
 
-1. The fixed effects of an ordinary least squares regression is equivalent to maximum likelihood/ 
-2. However the residual variance differs between the two. 
-3. In lavaan, regression models are always fully saturated.
-
+1. The magnitude and the significance of the fixed effects of an ordinary least squares regression is equivalent to maximum likelihood. 
+2. The number of degree of freedom is calculated using the number of observations - 1 in lm. In SEM, we use the unique pieces of info in the observed covariance matrix - the number of estimated parameters. 
+3. In lavaan, regression models are always fully saturated. That is, we are also estimating the covariances between all the included predictors 
+4. ML and ordinary least squares estimators calculate the residual variance in different ways. 
 
 # Mediation analysis 
 
-Mediation analysis (or path analysis) tests whether the relationship between two variables is explained by a third intermediate variable. It can have a casual interpretation such as the extent to which a variable (mediator) participates in the transmittance of change from a cause to its effect. 
-
+In his most simple form, mediation analysis (or path analysis) tests whether the relationship between two variables is explained by a third intermediate variable. It can have a casual interpretation such as the extent to which a variable (mediator) participates in the transmittance of change from a cause to its effect. 
 Consider a classical mediation setup with three variables: 
 
 - Y is the dependent variable (Welfare support) 
@@ -628,7 +626,6 @@ summary(fit_mediation_serial, standardized=TRUE)
 Income has a negative total effect on Welfare Support ($\beta_{Total}=-0.029, -2.214, p<.05$). As theorized, this effect was serially mediated by Egalitarianism and Welfare Criticism. The indirect pathway of the effect of Income on Welfare Support via Egalitarianism and Welfare Criticism is significant and positive ($\beta_{aed}= .001, z=2.560, p<.05$). On the contrary, the direct effect of Income on Welfare support is negative ($\beta_{c}=-0.030, -2.270, p<.05$) suggesting the presence of a competitive mediation.
 
 
-
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
 semPlot::semPaths(fit_mediation_serial, 
@@ -645,6 +642,8 @@ semPlot::semPaths(fit_mediation_serial,
 ```
 
 ## Comparing nested models 
+
+In some cases, we want to test whether adding a path between 2 predictors leads to a improvement in the fit of the model. Remember that fully saturated models have a perfect fit so it makes no sense to compare them. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
@@ -667,18 +666,22 @@ fa := f*a
 ## Total effect ##
 total := c + (a*e*d) 
 
-
-
 '
 
 fit_mediation_serial_2 <- sem(model_mediation_serial_2, # model formula
            data = ess_df                # data frame
   )
 
-summary(fit_mediation_serial_2, standardized=TRUE)
+summary(fit_mediation_serial_2, 
+        standardized=TRUE
+        )
 
 ```
 
+
+**Q:** Why we do have 1 degree of freedom ?
+
+Let's extract the fit indices of these two model and see whether there is an improvement in the fit. 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}
 
@@ -716,9 +719,11 @@ lavaan::anova(fit_mediation_serial, fit_mediation_serial_2)
 
 ```
 
+Adding and removing path changes the model and, consequently, the interpretation of the results. Make sure to think through this. 
+
 ## Boostrapping 
 
-This looks promising, but the delta method used for testing mediation is known to be problematic because the sampling distribution of the indirect path product term is not normal. Bootstrapping is a common workaround for this dilemma that does not make strong assumptions about the distribution of the coefficient of interest (i.e., the sampling distributions of the two mediated paths). We can implement this using the argument `se = "bootstrap"`. 
+The delta method used for testing mediation is known to be problematic because the sampling distribution of the indirect path product terms is not normal. Bootstrapping is a common workaround for this problem that does not make strong assumptions about the distribution of the coefficient of interest (i.e., the sampling distributions of the two mediated paths). We can implement this using the argument `se = "bootstrap"`. 
 
 
 ```{r, echo=T, message=FALSE, warning=FALSE}

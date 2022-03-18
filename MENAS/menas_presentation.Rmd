@@ -82,7 +82,7 @@ header-includes:
 
 ## What is SEM (2)?
 
-- Multivariate analytical technique: to gain insight in the relations between multiple variables
+- Multivariate analytical technique: to gain insights in the relations between multiple variables
 - Example: how are education, income, and threat related?
 
 ## What is SEM (3)?
@@ -133,8 +133,8 @@ Typically consists of two components that represent different sets of equations 
 - Estimate relations between latent variables instead of between unreliable indicators
 - Test of complex relationships between variables (e.g., multiple DVs, mediation, moderation, multi-group)
 - Handle different types of variables in the same model (i.e., nominal, ordinal, continuous)
-- Can handle equality constrains between different parameters of the model 
-- Extensive set of fit measure to evaluate model performance 
+- Can handle equality constrains between different parameters of the model
+- Extensive set of fit measure to evaluate model performance
 - Can be expanded "easily" to more complex data structures (e.g., multilevel modelling, latent growth modelling)
 
 ## Graphical Notation
@@ -238,8 +238,8 @@ kable(round(cov(head_10),2),format="latex", booktabs=TRUE) %>%
 
 Parameter estimation:
 
-- Every set of parameters implies a certain variance-covariance (and mean structure) matrix $\Sigma$
 - SEM comes down to estimate the parameters so that they approach the sample observed variance-covariance matrix $S$ as good as possible 
+- This means that every set of parameters implies a certain variance-covariance (and mean structure) matrix $\Sigma$ that is estimated by the model. 
 - Distance between the two matrices is evaluated based on a fit function
 
 
@@ -255,7 +255,7 @@ Most frequently used is Maximum Likelihood Estimation:
 
 The fit function is minimized by means of an iterative procedure
 
-- Point of departure: set of starting values for the parameters
+- Point of departure: set of starting values for the parameters 
 - Step 1: Evaluate the fit function
 - Step 2: Modify parameters in the direction of a better fit (till convergence)
 - Step 3: Evaluate the improvement in the fit function (till convergence)
@@ -272,7 +272,7 @@ The fit function is minimized by means of an iterative procedure
     - Rule of thumb: <.08 indicates acceptable fit
 - Comparative Fit Index (CFI)
     - $CFI= \frac{(\chi^2- df)_{NullModel} - (\chi^2- df)_{EstimatedModel}}{(\chi^2- df)_{Null Model}}$
-    -  Evaluates the fit of your model compared to the independence model
+    - Evaluates the fit of your model compared to the independence model
     - Range 0-1; higher values indicating a better fit
     - Rule of thumb: >.9 indicates acceptable fit
 - There are others (e.g. RMSEA, TLI) but they are similar to the one presented 
@@ -391,7 +391,6 @@ graph_sem(edges = edg,
 :::
 
 
-
 ## Correspondence between graphical and mathematical notation 
 
 
@@ -440,7 +439,6 @@ $$Y = \Gamma X + \beta Y + E$$
 ::::
 
 :::: column
-
 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, out.width="80%"}
@@ -624,7 +622,6 @@ graph_sem(edges = edg,
 :::
 
 
-
 ## Solutions (1) 
 
 
@@ -710,8 +707,10 @@ graph_sem(edges = edg,
 2. Errors 
     - Constant variance (Homoscedasticity)
     - Covariances among the disturbance terms are zero (equivalent to the assumption of uncorrelated errors among the predictor variables in regression)
-    - Multivariate normality of residuals 
+    - Normality of residuals
+4. Multivariate normality of the included variables
 4. No specification error (aka, no omitted variables)
+
 
 ## Equivalent models (1)
 
