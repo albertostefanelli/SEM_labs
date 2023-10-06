@@ -303,7 +303,7 @@ Sorts of identification:
 
 We can quickly check if our model has positive degrees of freedom using the following formula.
 
-**Degrees of freedom** = Number of parameters to estimate - Pieces of information
+**Degrees of freedom** = Pieces of information - Number of parameters to estimate
 
 **Pieces of information** = $\dfrac{p(p+1)}{2}=\dfrac{3(3+1)}{2}=6$.
 

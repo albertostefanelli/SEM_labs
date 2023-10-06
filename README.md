@@ -17,15 +17,13 @@ Changelog:
 
 - [Lab 1 - Laboratory](https://albertostefanelli.github.io/SEM_labs/KUL/labs/html_lab/SEM_lab_1.html)
 - [Lab 1 - Exercises](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_students/SEM_ex_1_students.html)
-
- <!--  [comment]: - [Lab 1 - Solutions](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_solutions/SEM_ex_1_solutions.html)-->
+- [Lab 1 - Solutions](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_solutions/SEM_ex_1_solutions.html)
 
 ---
 
 - [Lab 2 - Laboratory](https://albertostefanelli.github.io/SEM_labs/KUL/labs/html_lab/SEM_lab_2.html)
 - [Lab 2 - Exercises](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_students/SEM_ex_2_students.html)
-
- <!--  [comment]: - [Lab 2 - Solutions](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_solutions/SEM_ex_2_solutions.html)-->
+- [Lab 2 - Solutions](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_solutions/SEM_ex_2_solutions.html)
 
 ---
 
