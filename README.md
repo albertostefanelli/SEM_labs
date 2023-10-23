@@ -29,8 +29,7 @@ Changelog:
 
 - [Lab 3 - Laboratory](https://albertostefanelli.github.io/SEM_labs/KUL/labs/html_lab/SEM_lab_3.html)
 - [Lab 3 - Exercises](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_students/SEM_ex_3_students.html)
-
- <!-- [comment]: - [Lab 3 - Solutions](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_solutions/SEM_ex_3_solutions.html) -->
+- [Lab 3 - Solutions](https://albertostefanelli.github.io/SEM_labs/KUL/exercises/html_solutions/SEM_ex_3_solutions.html)
 
 ---
 
