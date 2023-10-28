@@ -221,8 +221,8 @@ model_eg_ws_cov <- '
 ## Egalitarianism ##
 egual =~  gincdif + dfincac + smdfslv
 ## Welfare support ##
-wc_socia =~ sbprvpv + sbeqsoc + sbcwkfm
-wc_socia ~~ 0*egual
+ws =~   gvslvol + gvhlthc + gvcldcr + gvpdlwk   
+ws ~~ 0*egual
 '
 
 fit_eg_ws_mlr_cov <- cfa(model_eg_ws_cov,    # model formula
@@ -257,7 +257,7 @@ anova(fit_eg_ws_mlr, fit_eg_ws_mlr_cov)
 
 # Ex.2 -- Measurement invariance with categorical data 
 
-1. Re-estimate a CFA (2 latent variable) for egalitarianism (gincdif, dfincac, smdfslv) and welfare support (gvslvol gvhlthc gvcldcr gvpdlwk) treating the items as ordinal  
+1. Re-estimate a CFA (2 latent variable) for egalitarianism (gincdif, dfincac, smdfslv) and social criticism (bprvpv, sbeqsoc, sbcwkfm) treating the items as ordinal  
 2. Test if the two latent constructs reach scalar invariance between male and feamle (free/fixed factor loading and thresholds). 
 4. Compare and interpret the fit. 
 5. Even if not necessary, relax certain equality constraints, re-fit the model, compare the fit. 
@@ -345,7 +345,7 @@ dfincac ~*~ c(1,1)*dfincac
 
 '
 
-fit_eg_sc_metric_p <- cfa(model_eg_sc_p,       # model formula
+fit_eg_sc_scalar_p <- cfa(model_eg_sc_p,       # model formula
                      data = ess_df,            # data frame
                      estimator = "WLSMV",      # select the estimator 
                      group = "gndr",
@@ -361,10 +361,10 @@ fit_eg_sc_metric_p <- cfa(model_eg_sc_p,       # model formula
                      group.partial=c("equal =~ dfincac","dfincac | t1")) 
 
 # we do not reach partial invariance
-anova(fit_eg_sc_conf,fit_eg_sc_metric,fit_eg_sc_metric_p)
+anova(fit_eg_sc_conf,fit_eg_sc_metric,fit_eg_sc_scalar_p)
 
 
-fit_eg_sc_metric_c <- cfa(model_eg_sc,           # model formula
+fit_eg_sc_metric_cont <- cfa(model_eg_sc,           # model formula
                      data = ess_df,            # data frame
                      estimator = "ML",         # select the estimator 
                      group = "gndr",
@@ -372,7 +372,7 @@ fit_eg_sc_metric_c <- cfa(model_eg_sc,           # model formula
 )
 
 table_fit <- 
-  list(model_fit(fit_eg_sc_metric_c), 
+  list(model_fit(fit_eg_sc_metric_cont), 
        model_fit(fit_eg_sc_metric)) %>% 
   reduce(rbind)
  
@@ -381,7 +381,7 @@ rownames(table_fit) <- c("Continous", "Ordinal")
 
 table_fit
 
-tidy_results_continous <- table_results(fit_eg_sc_metric_c,        
+tidy_results_continous <- table_results(fit_eg_sc_metric_cont,        
   columns = c("label", 
               "est_sig", 
               "se"),
